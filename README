@@ -1,4 +1,5 @@
 # README for APEXG4MC 
-# Geant4 based monte carlo sim for APEX experiment
-# ...
-# insert fancy programmer nonsense here
+
+# Building APEXMC
+> cmake (or cmake3)
+> make -jX (X specifies number of cores to use)

@@ -5,7 +5,7 @@
 # Setup the project
 #
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-project(APEXMC)
+project(APEXG4MC)
 find_package(Geant4 REQUIRED)
 ##
 ## Get the ROOT config

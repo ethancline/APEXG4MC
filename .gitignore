@@ -1,7 +1,7 @@
 #.gitignore
 
 #ignore binary
-APEXMC
+APEXG4MC
 
 #ignore logs
 logs/
