@@ -1,5 +1,5 @@
 # README for APEXG4MC 
 
-# Building APEXMC
-> cmake (or cmake3)
+# Building APEXG4MC
+> cmake ./ (or cmake3 ./)
 > make -jX (X specifies number of cores to use)
