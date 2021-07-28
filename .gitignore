@@ -1,0 +1,21 @@
+#.gitignore
+
+#ignore binary
+APEXMC
+
+#ignore logs
+logs/
+*.log
+
+#ignore cmake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+#ignore root files
+*.root
+
+#ignore geant4 mac files?
+
+#septum map too large
+Septa-JB_map.table
