@@ -48,12 +48,12 @@ DetectorConstruction::DetectorConstruction()
   UI->ApplyCommand(command);
 
 
-  G4FieldManager   *pFieldMgr;      
-  fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
-  pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
-  pFieldMgr->SetChordFinder( pChordFinder );
-  pFieldMgr->SetDetectorField(fSeptumField);
+//   G4FieldManager   *pFieldMgr;      
+//   fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
+//   pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
+//   G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
+//   pFieldMgr->SetChordFinder( pChordFinder );
+//   pFieldMgr->SetDetectorField(fSeptumField);
 
 }
 
