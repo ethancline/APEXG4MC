@@ -17,7 +17,7 @@
 ##################################################################
 
 /vis/scene/create
-/vis/open OGLI 800x800-0+0
+/vis/open OGLS 800x800-0+0
 #/vis/viwer/set/zoom/2.5
 /vis/viewer/set/viewpointThetaPhi 90 91
 /vis/scene/add/trajectories
