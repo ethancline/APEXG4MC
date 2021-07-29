@@ -30,12 +30,7 @@ private:
   G4UIdirectory*               fDetectorDir;
 
   G4UIcmdWithADouble*          fTargetLengthCmd;
-  G4UIcmdWithADouble*          fBigBiteDistanceCmd;
-  G4UIcmdWithADouble*          fBigBiteAngleCmd;
-  G4UIcmdWithADouble*          fBigBiteFieldCmd;
-  G4UIcmdWithADouble*          fBigCalDistanceCmd;
-  G4UIcmdWithADouble*          fBigCalAngleCmd;
-  G4UIcmdWithADouble*          fHMSAngleCmd;
+  G4UIcmdWithADouble*          fHRSAngleCmd;
 
   G4UIcommand*                 fUpdateCmd;
 };

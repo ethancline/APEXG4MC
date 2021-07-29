@@ -27,7 +27,6 @@ public:
 
   void ZeroArray();
   void FillFluxArray( Int_t );
-  void FillEdepArray( Int_t );
   void FillTree();
 
   void SetOutFileName  ( TString fname )           { fOutFileName  = fname; }
@@ -49,12 +48,6 @@ public:
   void SetFluxAMass     ( G4int          amm )       { fFluxAMass = amm;   }
   void SetFluxPID       ( G4int          pid )       { fFluxPid   = pid;   }
   void SetFluxTID       ( G4int          tid )       { fFluxTid   = tid;   }
-
-  void SetEdepPDef      ( G4ParticleDefinition* ep ) { fEdeppdef = ep;    }
-  void SetEdepPosPre    ( G4ThreeVector  epos )      { fEdeppospre  = epos;  }
-  void SetEdepPosPost   ( G4ThreeVector  epos )      { fEdeppospost  = epos;  }
-  void SetEdepID        ( G4int          eid )       { fEdepid   = eid;   }
-  void SetEdepEdep      ( G4double       eedep)      { fEdepedep = eedep; }
 
 private:
   
@@ -114,24 +107,6 @@ private:
   Float_t               fFlux_ypost[fMaxhits];
   Float_t               fFlux_zpost[fMaxhits];
   Float_t               fFlux_Energy[fMaxhits];
-
-  // Edep raw
-  G4ParticleDefinition* fEdeppdef;
-  G4ThreeVector         fEdeppospre;
-  G4ThreeVector         fEdeppospost;
-  G4int                 fEdepid;
-  G4double              fEdepedep;
-
-  Int_t                 fEdep_Nhits;
-  Int_t                 fEdep_id[fMaxhits];
-  Int_t                 fEdep_pdg[fMaxhits];
-  Float_t               fEdep_Edep[fMaxhits];
-  Float_t               fEdep_xpre[fMaxhits];
-  Float_t               fEdep_ypre[fMaxhits];
-  Float_t               fEdep_zpre[fMaxhits];
-  Float_t               fEdep_xpost[fMaxhits];
-  Float_t               fEdep_ypost[fMaxhits];
-  Float_t               fEdep_zpost[fMaxhits];
 
 };
 

@@ -31,12 +31,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   inline G4int              GetNoSD()       { return fNSD;    };
 
   void SetTargetLength    ( G4double l    ) { fTarLength = l;    }
-  void SetBigBiteDistance ( G4double dis  ) { fBBDist    = dis;  }
-  void SetBigBiteAngle    ( G4double an   ) { fBBAngle   = an;   }
-  void SetBigBiteField    ( G4double Bx   ) { fBBBx      = Bx;   }
-  void SetBigCalDistance  ( G4double dist ) { fBCDist    = dist; }
-  void SetBigCalAngle     ( G4double ang  ) { fBCAngle   = ang;  }
-  void SetHMSAngle        ( G4double a    ) { fHMSAngle  = a;    }
+  void SetHRSAngle        ( G4double a    ) { fHRSAngle  = a;    }
 
   private:
 
@@ -55,12 +50,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   EnergyDepositSD*   fEdepSD;
 
   G4double           fTarLength;
-  G4double           fBBDist;
-  G4double           fBBAngle;
-  G4double           fBBBx;
-  G4double           fBCDist;
-  G4double           fBCAngle;
-  G4double           fHMSAngle;
+  G4double           fHRSAngle;
 
 };
 #endif

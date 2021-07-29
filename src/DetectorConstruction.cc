@@ -48,12 +48,12 @@ DetectorConstruction::DetectorConstruction()
   UI->ApplyCommand(command);
 
 
-  G4FieldManager   *pFieldMgr;      
-  fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
-  pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
-  G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
-  pFieldMgr->SetChordFinder( pChordFinder );
-  pFieldMgr->SetDetectorField(fSeptumField);
+//   G4FieldManager   *pFieldMgr;      
+//   fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
+//   pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
+//   G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
+//   pFieldMgr->SetChordFinder( pChordFinder );
+//   pFieldMgr->SetDetectorField(fSeptumField);
 
 }
 
@@ -182,7 +182,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Left Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
-  G4double LQ1_th           = 12.5 *deg; 
+  G4double LQ1_th           = fHRSAngle; 
   G4double LQ1_d            = 2.5 *m; 
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
@@ -227,7 +227,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Right Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
-  G4double RQ1_th           = -12.5 *deg; 
+  G4double RQ1_th           = -fHRSAngle; 
   G4double RQ1_d            = 2.5 *m; 
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 

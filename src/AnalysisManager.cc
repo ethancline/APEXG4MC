@@ -67,16 +67,6 @@ void AnalysisManager::InitOutput()
   fROOTtree->Branch("Flux_pid",   fFlux_pid,    "Flux_pid[Flux_Nhits]/I");
   fROOTtree->Branch("Flux_th",    &fFlux_th,    "Flux_th[Flux_Nhits]/F"     );
   fROOTtree->Branch("Flux_ph",    &fFlux_ph,    "Flux_ph[Flux_Nhits]/F"     );
-
-  // Set Edep Hit Branches
-  fROOTtree->Branch("Edep_Nhits", &fEdep_Nhits, "Edep_Nhits/I");  
-  fROOTtree->Branch("Edep_pdg",   fEdep_pdg,    "Edep_pdg[Edep_Nhits]/I");
-  fROOTtree->Branch("Edep_id",    fEdep_id,     "Edep_id[Edep_Nhits]/I");
-  fROOTtree->Branch("Edep_x",     fEdep_xpre,   "Edep_x[Edep_Nhits]/F"  );
-  fROOTtree->Branch("Edep_y",     fEdep_ypre,   "Edep_y[Edep_Nhits]/F"  );
-  fROOTtree->Branch("Edep_z",     fEdep_zpre,   "Edep_z[Edep_Nhits]/F"  );
-  fROOTtree->Branch("Edep_E",     fEdep_Edep,   "Edep_E[Edep_Nhits]/F" );
-
 }
 
 //---------------------------------------------------------------------------
@@ -107,13 +97,6 @@ void AnalysisManager::ZeroArray()
   fFluxANum    = 0;
   fFluxAMass   = 0;
 
-  fEdeppdef    = NULL;
-  fEdep_Nhits  = 0;
-  fEdeppospre  = (zero);
-  fEdeppospost = (zero);
-  fEdepid      = 0;
-  fEdepedep    = 0;
-
   for ( Int_t i = 0; i < fMaxhits; i++ ) {
     fFlux_id[i]      = 9999;  
     fFlux_time[i]    = 9999;
@@ -142,15 +125,6 @@ void AnalysisManager::ZeroArray()
     fFlux_amass[i]   = 9999;  
     fFlux_anum[i]    = 9999; 
 
-    fEdep_id[i]      = 9999;  
-    fEdep_pdg[i]      = 9999;  
-    fEdep_Edep[i]    = 9999;
-    fEdep_xpre[i]    = 9999;
-    fEdep_ypre[i]    = 9999;
-    fEdep_zpre[i]    = 9999;
-    fEdep_xpost[i]   = 9999;
-    fEdep_ypost[i]   = 9999;
-    fEdep_zpost[i]   = 9999;
   }
 
 }
@@ -193,28 +167,6 @@ void AnalysisManager::FillFluxArray( Int_t hitn )
     fFlux_ypre[hitn]   = (fFlux_ypre[hitn] + fFlux_ypost[hitn])/2.;
     fFlux_zpre[hitn]   = (fFlux_zpre[hitn] + fFlux_zpost[hitn])/2.;
 
-}
-
-//---------------------------------------------------------------------------
-
-void AnalysisManager::FillEdepArray( Int_t hitn ) 
-{
-    fEdep_Nhits++;
-    fEdep_id[hitn]     = (Int_t)fEdepid;
-    fEdep_pdg[hitn]    = (Int_t)fEdeppdef->GetPDGEncoding();
-    fEdep_xpre[hitn]   = (Float_t)fEdeppospre.getX();                             
-    fEdep_ypre[hitn]   = (Float_t)fEdeppospre.getY();                             
-    fEdep_zpre[hitn]   = (Float_t)fEdeppospre.getZ();                             
-    fEdep_xpost[hitn]  = (Float_t)fEdeppospost.getX();                             
-    fEdep_ypost[hitn]  = (Float_t)fEdeppospost.getY();                             
-    fEdep_zpost[hitn]  = (Float_t)fEdeppospost.getZ();                             
-    fEdep_Edep[hitn]   = (Float_t)fEdepedep;
-
-    fEdep_xpre[hitn]   = (fEdep_xpre[hitn] + fEdep_xpost[hitn])/2.;
-    fEdep_ypre[hitn]   = (fEdep_ypre[hitn] + fEdep_ypost[hitn])/2.;
-    fEdep_zpre[hitn]   = (fEdep_zpre[hitn] + fEdep_zpost[hitn])/2.;
-
-    //    G4cout << fEdep_pdg[hitn] << G4endl;
 }
 
 //---------------------------------------------------------------------------

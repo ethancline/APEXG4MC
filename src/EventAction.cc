@@ -84,21 +84,6 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 	  }
 	}
 
-      // Fill output hit arrays for energy deposits
-      else if( hc->GetName().contains("Edep")  ) 
-	{
-	  for(G4int j = 0; j < hc_nhits; j++) {
-	    edhit = static_cast<EnergyDepositHit*>( hc->GetHit(j) );
-	    fAnaManager->SetEdepPosPre( (G4ThreeVector) edhit->GetPosPre() );
-	    fAnaManager->SetEdepPosPost( (G4ThreeVector) edhit->GetPosPost() );
-	    fAnaManager->SetEdepEdep( (G4double) edhit->GetEdep() );
-	    fAnaManager->SetEdepID( (G4int) edhit->GetID() );
-
-	    fAnaManager->FillEdepArray( nedephits ); 
-	    nedephits++;
-	  }
-	}
-
     }
     
     if( nfluxhits != 0 || nedephits != 0 ) {
