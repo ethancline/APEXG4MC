@@ -21,6 +21,7 @@
 #include "G4SDManager.hh"
 
 #include "G4FieldManager.hh"
+#include "G4UniformMagField.hh"
 #include "G4ChordFinder.hh"
 
 #include "G4GeometryManager.hh"
@@ -46,15 +47,6 @@ DetectorConstruction::DetectorConstruction()
   G4UImanager* UI = G4UImanager::GetUIpointer();
   G4String command = "/control/execute macros/DetectorSetup.mac";
   UI->ApplyCommand(command);
-
-
-//   G4FieldManager   *pFieldMgr;      
-//   fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
-//   pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
-//   G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
-//   pFieldMgr->SetChordFinder( pChordFinder );
-//   pFieldMgr->SetDetectorField(fSeptumField);
-
 }
 
 //---------------------------------------------------------------------------
@@ -71,6 +63,31 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4PhysicalVolumeStore::GetInstance()->Clean();
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
+
+  //---------------------------------------------------------------------------
+  // Set up magnetic field
+  //---------------------------------------------------------------------------
+
+  G4FieldManager  *magFieldMgr;
+  G4MagneticField* magField;
+  G4double minStep = 1.0*mm;
+  G4double min_eps      = 1.0E-03;
+  G4double max_eps      = 1.0E-02;
+  G4double deltachord   = 1.0 *mm;
+  G4double deltaonestep = 3.0 *mm;
+  magFieldMgr = new G4FieldManager();
+
+  //  magField = new G4UniformMagField(G4ThreeVector(0., -1.4*tesla, 0.));                                                                                                                                           
+  magField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
+
+  G4ChordFinder* chordF = new G4ChordFinder(magField,minStep);
+  magFieldMgr->SetChordFinder(chordF);
+  magFieldMgr->SetDetectorField(magField);
+  magFieldMgr->GetChordFinder()->SetDeltaChord( deltachord );
+  magFieldMgr->SetMinimumEpsilonStep( min_eps );
+  magFieldMgr->SetMaximumEpsilonStep( max_eps );
+  magFieldMgr->SetDeltaOneStep( deltaonestep );
+
 
   //---------------------------------------------------------------------------
   // Define Materials
@@ -92,7 +109,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //---------------------------------------------------------------------------
 
   G4Box* expHall_box           = new G4Box("expHall_box",
-					   15. *m, 12.0 *m, 15. *m );
+					   5. *m, 1.0 *m, 5. *m );
 
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,
 						     fNistManager->FindOrBuildMaterial("G4_AIR"),
@@ -160,7 +177,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //--------------------------------------------------------------------------- 
   
   G4double LSeptum_th           = 5.0 *deg; 
-  G4double LSeptum_d            = 1.5 *m; 
+  G4double LSeptum_d            = 1.75 *m; 
   G4double LSeptum_xprime       = -LSeptum_d * std::sin(LSeptum_th); 
   G4double LSeptum_zprime       = LSeptum_d * std::cos(LSeptum_th); 
   G4RotationMatrix* LSeptum_rm  = new G4RotationMatrix(); 
@@ -183,7 +200,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //--------------------------------------------------------------------------- 
   
   G4double LQ1_th           = fHRSAngle *deg; 
+<<<<<<< HEAD
   G4double LQ1_d            = 2.5 *m; 
+=======
+  G4double LQ1_d            = 3.5 *m; 
+>>>>>>> origin/devel
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
   G4RotationMatrix* LQ1_rm  = new G4RotationMatrix(); 
@@ -206,7 +227,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //--------------------------------------------------------------------------- 
   
   G4double RSeptum_th           = -5.0 *deg; 
-  G4double RSeptum_d            = 1.5 *m; 
+  G4double RSeptum_d            = 1.75 *m; 
   G4double RSeptum_xprime       = -RSeptum_d * std::sin(RSeptum_th); 
   G4double RSeptum_zprime       = RSeptum_d * std::cos(RSeptum_th); 
   G4RotationMatrix* RSeptum_rm  = new G4RotationMatrix(); 
@@ -227,8 +248,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Right Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
+<<<<<<< HEAD
   G4double RQ1_th           = -fHRSAngle * deg; 
   G4double RQ1_d            = 2.5 *m; 
+=======
+  G4double RQ1_th           = -fHRSAngle *deg; 
+  G4double RQ1_d            = 3.5 *m; 
+>>>>>>> origin/devel
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
   G4RotationMatrix* RQ1_rm  = new G4RotationMatrix(); 
@@ -250,7 +276,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Set Step Limits, Sensitive Detector and Visualisation
   //---------------------------------------------------------------------------
 
-  G4double maxStep = 0.5 *mm;;
+  G4double maxStep = 0.1 *mm;;
   G4UserLimits* stepLimit = new G4UserLimits(maxStep);
 
   //---------------------------------------------------------------------------
@@ -268,10 +294,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VisAttributes* red     = new G4VisAttributes( G4Colour(1.0,0.0,0.0)   );
 
   expHall_log->SetVisAttributes(G4VisAttributes::Invisible);
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/devel
   LSeptum_log->SetVisAttributes(red);
   RSeptum_log->SetVisAttributes(red);
   LQ1_log->SetVisAttributes(blue);
   RQ1_log->SetVisAttributes(blue);
+
+  //---------------------------------------------------------------------------                                                                                                                                      
+  expHall_log->SetFieldManager(magFieldMgr, true);
 
   //---------------------------------------------------------------------------
 
