@@ -48,12 +48,12 @@ DetectorConstruction::DetectorConstruction()
   UI->ApplyCommand(command);
 
 
-//   G4FieldManager   *pFieldMgr;      
-//   fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
-//   pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
-//   G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
-//   pFieldMgr->SetChordFinder( pChordFinder );
-//   pFieldMgr->SetDetectorField(fSeptumField);
+  G4FieldManager   *pFieldMgr;      
+  fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
+  pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
+  G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
+  pFieldMgr->SetChordFinder( pChordFinder );
+  pFieldMgr->SetDetectorField(fSeptumField);
 
 }
 
@@ -92,7 +92,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //---------------------------------------------------------------------------
 
   G4Box* expHall_box           = new G4Box("expHall_box",
-					   15. *m, 12.0 *m, 15. *m );
+					   5. *m, 1.0 *m, 5. *m );
 
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,
 						     fNistManager->FindOrBuildMaterial("G4_AIR"),
@@ -182,7 +182,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Left Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
-  G4double LQ1_th           = fHRSAngle; 
+  G4double LQ1_th           = fHRSAngle *deg; 
   G4double LQ1_d            = 2.5 *m; 
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
@@ -227,7 +227,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Right Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
-  G4double RQ1_th           = -fHRSAngle; 
+  G4double RQ1_th           = -fHRSAngle *deg; 
   G4double RQ1_d            = 2.5 *m; 
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
@@ -266,6 +266,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4VisAttributes* blue    = new G4VisAttributes( G4Colour(0.0,0.0,1.0)   );
   G4VisAttributes* red     = new G4VisAttributes( G4Colour(1.0,0.0,0.0)   );
+
+  expHall_log->SetVisAttributes(G4VisAttributes::Invisible);
 
   LSeptum_log->SetVisAttributes(red);
   RSeptum_log->SetVisAttributes(red);
