@@ -30,6 +30,9 @@
 #include "G4PhysicalVolumeStore.hh"
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
+#include "G4MagIntegratorStepper.hh"
+#include "G4Mag_SpinEqRhs.hh"
+#include "G4ClassicalRK4.hh"
 
 #include "G4VisAttributes.hh"
 #include "G4String.hh"
@@ -45,7 +48,7 @@ DetectorConstruction::DetectorConstruction()
   fDetMessenger = new DetectorMessenger(this);
 
   G4UImanager* UI = G4UImanager::GetUIpointer();
-  G4String command = "/control/execute macros/DetectorSetup.mac";
+  G4String command = "/control/execute ../macros/DetectorSetup.mac";
   UI->ApplyCommand(command);
 }
 
@@ -70,23 +73,27 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4FieldManager  *magFieldMgr;
   G4MagneticField* magField;
-  G4double minStep = 1.0*mm;
-  G4double min_eps      = 1.0E-03;
-  G4double max_eps      = 1.0E-02;
+  G4double minStep = .01*mm;
+  G4double min_eps      = 1.0E-04;
+  G4double max_eps      = 1.0E-03;
   G4double deltachord   = 1.0 *mm;
   G4double deltaonestep = 3.0 *mm;
-  magFieldMgr = new G4FieldManager();
 
-  //  magField = new G4UniformMagField(G4ThreeVector(0., -1.4*tesla, 0.));                                                                                                                                           
+  magFieldMgr = new G4FieldManager();
+  // magField = new G4UniformMagField(G4ThreeVector(0., -1.4*tesla, 0.));                                                                                                                                           
   magField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
 
-  G4ChordFinder* chordF = new G4ChordFinder(magField,minStep);
+
+
+  G4Mag_SpinEqRhs* fBMTequation = new G4Mag_SpinEqRhs(magField);
+  G4MagIntegratorStepper *pStepper = new G4ClassicalRK4(fBMTequation,12);
+  G4ChordFinder* chordF = new G4ChordFinder(magField,minStep,pStepper);
   magFieldMgr->SetChordFinder(chordF);
-  magFieldMgr->SetDetectorField(magField);
   magFieldMgr->GetChordFinder()->SetDeltaChord( deltachord );
   magFieldMgr->SetMinimumEpsilonStep( min_eps );
   magFieldMgr->SetMaximumEpsilonStep( max_eps );
   magFieldMgr->SetDeltaOneStep( deltaonestep );
+  magFieldMgr->SetDetectorField(magField,2);
 
 
   //---------------------------------------------------------------------------
@@ -200,11 +207,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //--------------------------------------------------------------------------- 
   
   G4double LQ1_th           = fHRSAngle *deg; 
-<<<<<<< HEAD
-  G4double LQ1_d            = 2.5 *m; 
-=======
   G4double LQ1_d            = 3.5 *m; 
->>>>>>> origin/devel
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
   G4RotationMatrix* LQ1_rm  = new G4RotationMatrix(); 
@@ -248,13 +251,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Right Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
-<<<<<<< HEAD
-  G4double RQ1_th           = -fHRSAngle * deg; 
-  G4double RQ1_d            = 2.5 *m; 
-=======
+
   G4double RQ1_th           = -fHRSAngle *deg; 
   G4double RQ1_d            = 3.5 *m; 
->>>>>>> origin/devel
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
   G4RotationMatrix* RQ1_rm  = new G4RotationMatrix(); 
@@ -294,10 +293,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VisAttributes* red     = new G4VisAttributes( G4Colour(1.0,0.0,0.0)   );
 
   expHall_log->SetVisAttributes(G4VisAttributes::Invisible);
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/devel
   LSeptum_log->SetVisAttributes(red);
   RSeptum_log->SetVisAttributes(red);
   LQ1_log->SetVisAttributes(blue);
