@@ -139,22 +139,9 @@ void BField_Septum_New::ReadMap(const char *filename)
 
 //////////////////////////////////////////////////////////////////////
 
-void  BField_Septum_New::GetFieldValue(const double point[4],
-				 double *Bfield ) const
+void BField_Septum_New::GetBField(double fPos[3],double fB[3])
 {
 
-  //-------------------------------------------------------------
-  // DJH Mod
-  //-------------------------------------------------------------
-
-  double fPos[3];
-  double fB[3];
-
-  fPos[0] = point[0];
-  fPos[1] = point[1];
-  fPos[2] = point[2];
-
-  //-------------------------------------------------------------
 
   //-------------------------------------------------------------
   // DJH Mod
@@ -245,21 +232,6 @@ void  BField_Septum_New::GetFieldValue(const double point[4],
             if (fPos[0] < 0 ) {fB[0]*= -1.;};
             if (fPos[1] < 0 ) {fB[0]*= -1.; fB[2]*= -1.;};
 	    
-	    Bfield[0] = 0.0;
-	    Bfield[1] = 0.0;
-	    Bfield[2] = 0.0;
-
-            if (fPos[2]>(-40. + 105.29) *cm && fPos[2]<(170 + 105.29)*cm) {
-		
-		fB[0] *=2.2/2.140045;
-		fB[1] *=2.2/2.140045;
-		fB[2] *=2.2/2.140045;
-		
-		Bfield[0] =  fSeptumFieldScale *fB[0] * (fLHRSMomentum/GeV)/2.2;
-		Bfield[1] =  -fSeptumFieldScale *fB[1] * (fLHRSMomentum/GeV)/2.2;	    
-		Bfield[2] =  fSeptumFieldScale *fB[2] * (fLHRSMomentum/GeV)/2.2;
-	    }
-
 	}
 
 }

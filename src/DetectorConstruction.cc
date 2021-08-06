@@ -2,7 +2,7 @@
 #include "FluxSD.hh"
 #include "EnergyDepositSD.hh"
 #include "DetectorMessenger.hh"
-#include "BField_Septum_New.hh"
+#include "GlobalField.hh"
 
 #include "G4Material.hh"
 #include "G4BooleanSolid.hh"
@@ -23,6 +23,14 @@
 #include "G4FieldManager.hh"
 #include "G4UniformMagField.hh"
 #include "G4ChordFinder.hh"
+#include "G4EquationOfMotion.hh"
+#include "G4EqMagElectricField.hh"
+#include "G4Mag_UsualEqRhs.hh"
+#include "G4MagIntegratorStepper.hh"
+#include "G4MagIntegratorDriver.hh"
+#include "G4ChordFinder.hh"
+#include "G4Mag_SpinEqRhs.hh"
+#include "G4ClassicalRK4.hh"
 
 #include "G4GeometryManager.hh"
 #include "G4SolidStore.hh"
@@ -51,14 +59,6 @@ DetectorConstruction::DetectorConstruction()
   G4String command = "/control/execute macros/DetectorSetup.mac";
   UI->ApplyCommand(command);
 
-
-//   G4FieldManager   *pFieldMgr;      
-//   fSeptumField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
-//   pFieldMgr=G4TransportationManager::GetTransportationManager()->GetFieldManager();
-//   G4ChordFinder *pChordFinder = new G4ChordFinder(fSeptumField);
-//   pFieldMgr->SetChordFinder( pChordFinder );
-//   pFieldMgr->SetDetectorField(fSeptumField);
-
 }
 
 //---------------------------------------------------------------------------
@@ -80,25 +80,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Set up magnetic field
   //---------------------------------------------------------------------------
 
-  G4FieldManager  *magFieldMgr;
-  G4MagneticField* magField;
-  G4double minStep = 1.0*mm;
-  G4double min_eps      = 1.0E-03;
-  G4double max_eps      = 1.0E-02;
-  G4double deltachord   = 1.0 *mm;
-  G4double deltaonestep = 3.0 *mm;
-  magFieldMgr = new G4FieldManager();
-
-  //  magField = new G4UniformMagField(G4ThreeVector(0., -1.4*tesla, 0.));                                                                                                                                           
-  magField = new BField_Septum_New( 2.2, 2.2, "Septa-JB_map.table" );
-
-  G4ChordFinder* chordF = new G4ChordFinder(magField,minStep);
-  magFieldMgr->SetChordFinder(chordF);
-  magFieldMgr->SetDetectorField(magField);
-  magFieldMgr->GetChordFinder()->SetDeltaChord( deltachord );
-  magFieldMgr->SetMinimumEpsilonStep( min_eps );
-  magFieldMgr->SetMaximumEpsilonStep( max_eps );
-  magFieldMgr->SetDeltaOneStep( deltaonestep );
+  G4MagneticField *fMagField = new GlobalField();
+  G4FieldManager *fm = new G4FieldManager(fMagField);
+  G4Mag_SpinEqRhs* fBMTequation = new G4Mag_SpinEqRhs(fMagField);
+  G4MagIntegratorStepper *pStepper = new G4ClassicalRK4(fBMTequation,12);
+  G4ChordFinder *cftemp = new G4ChordFinder(fMagField, 0.01*mm, pStepper);
+  fm->SetChordFinder(cftemp);
 
   double LarmStepLimit=2.000 * mm; //why
   G4UserLimits* LarmStepLimits = new G4UserLimits(LarmStepLimit);
@@ -622,7 +609,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   RQ1_log->SetVisAttributes(blue);
 
   //---------------------------------------------------------------------------                                                                                                                                      
-  expHall_log->SetFieldManager(magFieldMgr, true);
+
+  expHall_log->SetFieldManager(fm, true);
 
   //---------------------------------------------------------------------------
 
