@@ -135,12 +135,6 @@ void BField_Septum_New::ReadMap(const char *filename)
        Btxt[i][j][k][l]=i+j+k*l;
     }
     */
-    cout<<"arrrray       "<<Btxt[29][9][99][0]<<endl;
-    cout<<"arrrray       "<<Btxt[19][9][99][1]<<endl;
-    cout<<"arrrray       "<<Btxt[29][9][99][2]<<endl;
-    cout<<"arrrray       "<<BCoord[29][9][99][0]<<endl;
-    cout<<"arrrray       "<<BCoord[19][9][99][1]<<endl;
-    cout<<"arrrray       "<<BCoord[29][9][99][2]<<endl;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -148,7 +142,7 @@ void BField_Septum_New::ReadMap(const char *filename)
 void  BField_Septum_New::GetFieldValue(const double point[4],
 				 double *Bfield ) const
 {
-  
+
   //-------------------------------------------------------------
   // DJH Mod
   //-------------------------------------------------------------
@@ -159,16 +153,19 @@ void  BField_Septum_New::GetFieldValue(const double point[4],
   fPos[0] = point[0];
   fPos[1] = point[1];
   fPos[2] = point[2];
-  
+
   //-------------------------------------------------------------
 
-//    double sep_cent= 69.612752*cm;  //distance from target to septum is 175 cm 
-    double sep_cent= 68.6457*cm;  //distance from target to septum is 173.939 cm
+  //-------------------------------------------------------------
+  // DJH Mod
+  //-------------------------------------------------------------
+  //    double sep_cent= 68.6457*cm;  //distance from target to septum is 173.939 cm
+    double sep_cent= 173.939*cm;  //distance from target to septum is 173.939 cm    
     double x_loc=fabs(fPos[0]);
     double y_loc=fabs(fPos[1]);
     double z_loc=sep_cent-fPos[2];
 
-    {
+    //    {
 //        double q1_center = 207.0649*cm;
 //        double q1_entry = 160.0*cm;
 //        double q1_exit = 254.13*cm;
@@ -238,31 +235,31 @@ void  BField_Septum_New::GetFieldValue(const double point[4],
 
             double Bz_z = Bz_z1 + (z_loc - z1)*(Bz_z2-Bz_z1)/(z2-z1);
 
-            fB[0]=Bx_z/10000.*tesla;
-            fB[1]=By_z/10000.*tesla;
-            fB[2]=Bz_z/10000.*tesla;
-            if (fPos[0] < 0 ) {fB[0]*= -1.;};
-            if (fPos[1] < 0 ) {fB[0]*= -1.; fB[2]*= -1.;};
-	    
-
 	    //-------------------------------------------------------------
 	    // DJH Mod
 	    //-------------------------------------------------------------
 
-	    if(fB[0] > 0.001 ) 
-	      G4cout << "-----" << fPos[0] << "\t" <<  fPos[1] << "\t" <<  fPos[2] << "\t" << G4endl;
+            fB[0]=Bx_z/10000.;//*tesla;
+            fB[1]=By_z/10000.;//*tesla;
+            fB[2]=Bz_z/10000.;//*tesla;
+            if (fPos[0] < 0 ) {fB[0]*= -1.;};
+            if (fPos[1] < 0 ) {fB[0]*= -1.; fB[2]*= -1.;};
+	    
+	    Bfield[0] = 0.0;
+	    Bfield[1] = 0.0;
+	    Bfield[2] = 0.0;
 
-	    fB[0] *=2.2/2.140045;
-	    fB[1] *=2.2/2.140045;
-	    fB[2] *=2.2/2.140045;
+            if (fPos[2]>(-40. + 105.29) *cm && fPos[2]<(170 + 105.29)*cm) {
+		
+		fB[0] *=2.2/2.140045;
+		fB[1] *=2.2/2.140045;
+		fB[2] *=2.2/2.140045;
+		
+		Bfield[0] =  fSeptumFieldScale *fB[0] * (fLHRSMomentum/GeV)/2.2;
+		Bfield[1] =  -fSeptumFieldScale *fB[1] * (fLHRSMomentum/GeV)/2.2;	    
+		Bfield[2] =  fSeptumFieldScale *fB[2] * (fLHRSMomentum/GeV)/2.2;
+	    }
 
-	    Bfield[0] =  fSeptumFieldScale *fB[0] * (fLHRSMomentum/GeV)/2.2;
-	    Bfield[1] =  fSeptumFieldScale *fB[1] * (fLHRSMomentum/GeV)/2.2;	    
-	    Bfield[2] =  fSeptumFieldScale *fB[2] * (fLHRSMomentum/GeV)/2.2;
+	}
 
-
-        }
-
-    }
-//    return true;
 }
