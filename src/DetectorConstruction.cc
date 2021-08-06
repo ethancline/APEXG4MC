@@ -554,11 +554,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //--------------------------------------------------------------------------- 
   
   G4double LQ1_th           = fHRSAngle *deg; 
-<<<<<<< HEAD
-  G4double LQ1_d            = 2.5 *m; 
-=======
   G4double LQ1_d            = 3.5 *m; 
->>>>>>> origin/devel
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
   G4RotationMatrix* LQ1_rm  = new G4RotationMatrix(); 
@@ -580,13 +576,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Right Q1 Virtual Detector
   //--------------------------------------------------------------------------- 
   
-<<<<<<< HEAD
   G4double RQ1_th           = -fHRSAngle * deg; 
-  G4double RQ1_d            = 2.5 *m; 
-=======
-  G4double RQ1_th           = -fHRSAngle *deg; 
   G4double RQ1_d            = 3.5 *m; 
->>>>>>> origin/devel
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
   G4RotationMatrix* RQ1_rm  = new G4RotationMatrix(); 
@@ -626,12 +617,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VisAttributes* red     = new G4VisAttributes( G4Colour(1.0,0.0,0.0)   );
 
   expHall_log->SetVisAttributes(G4VisAttributes::Invisible);
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/devel
-  //LSeptum_log->SetVisAttributes(red);
-  //RSeptum_log->SetVisAttributes(red);
   LQ1_log->SetVisAttributes(blue);
   RQ1_log->SetVisAttributes(blue);
 
