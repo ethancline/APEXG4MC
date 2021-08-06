@@ -56,4 +56,10 @@ target_link_libraries(${PROJECT_NAME} ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
-
+#
+message("Downloading Septum field map...")
+if(EXISTS  Septa-JB_map.table)
+message(STATUS "Septum map already downloaded")
+else()
+file(DOWNLOAD http://nuclear.gla.ac.uk/~david/Septa-JB_map.table ${CMAKE_CURRENT_BINARY_DIR}/Septa-JB_map.table SHOW_PROGRESS)
+endif()

@@ -10,16 +10,16 @@
 #include "G4MagneticField.hh"
 using namespace CLHEP;
 
-class BField_Septum_New : public G4MagneticField
+class BField_Septum_New 
 
 {
 public:
   BField_Septum_New(double pMomentumL=0,double pMomentumR=0,
 		    const char *mapfile="g2p_septumfield.dat");
   virtual ~BField_Septum_New();
-  //  void GetBField(double Pos[3],double B[3]);
-  void  GetFieldValue( const  double Point[4],
-                       double *Bfield          ) const;
+  void GetBField(double Pos[3],double B[3]);
+//   void  GetFieldValue( const  double Point[4],
+//                        double *Bfield          ) const;
 
 private:
   void ReadMap(const char *filename);
