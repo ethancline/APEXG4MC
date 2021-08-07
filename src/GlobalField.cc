@@ -37,7 +37,7 @@ void GlobalField::GetFieldValue(const double Point[3], double *Bfield) const {
 	  B_sept[2]*=2.2/2.140045;
 
  	  Bfield[0]+=SeptumFieldScale*B_sept[0]*(mLHRSMomentum/GeV)/2.2;
- 	  Bfield[1]+=-SeptumFieldScale*B_sept[1]*(mLHRSMomentum/GeV)/2.2;
+	  Bfield[1]+=SeptumFieldScale*B_sept[1]*(mLHRSMomentum/GeV)/2.2;
  	  Bfield[2]+=SeptumFieldScale*B_sept[2]*(mLHRSMomentum/GeV)/2.2;
     }
   return;

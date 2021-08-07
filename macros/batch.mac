@@ -14,17 +14,27 @@
 
 ##################################################################
 
+/gps/source/clear
+/gps/source/multiplevertex true
+
+/gps/source/add 1
 /gps/particle e-
-
 /gps/ang/type beam2d
-/gps/ang/sigma_x 0.002 deg
-/gps/ang/sigma_y 0.002 deg
-/gps/ang/rot1 -1 0 0
-/gps/ang/rot2 0 1 0
-
+/gps/ang/sigma_x 1.5 deg
+/gps/ang/sigma_y 0.5 deg
+/gps/ang/rot1 -11.4795 0 1
 /gps/energy 1 GeV
-
 /gps/pos/type Point
-/gps/pos/centre 0. 0. -2. m
+/gps/pos/centre 0. 0. -0.01 m
 
-/run/beamOn 100
+/gps/source/add 2
+/gps/particle e+
+/gps/ang/type beam2d
+/gps/ang/sigma_x 1.5 deg
+/gps/ang/sigma_y 0.5 deg
+/gps/ang/rot1 -11.4795 0 -1
+/gps/energy 1 GeV
+/gps/pos/type Point
+/gps/pos/centre 0. 0. 0.01 m
+
+/run/beamOn 10000

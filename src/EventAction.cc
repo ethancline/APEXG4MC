@@ -40,8 +40,11 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 {
 
   G4int event_id   = evt->GetEventID();  
-  if ( event_id%1 == 0 ) 
-    G4cout <<"Event " << event_id << G4endl;
+  if ( event_id%1000 == 0 )  {
+     printf("Event %8d\r", event_id);
+     fflush(stdout);
+
+  }
 
   G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
   FluxHit* hit;
