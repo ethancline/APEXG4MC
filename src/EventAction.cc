@@ -49,7 +49,6 @@ void EventAction::EndOfEventAction(const G4Event* evt)
   G4HCofThisEvent* HCE = evt->GetHCofThisEvent();
   FluxHit* hit;
   G4int nfluxhits = 0;
-  EnergyDepositHit* edhit;
   G4int nedephits = 0;
 
   if(HCE) {

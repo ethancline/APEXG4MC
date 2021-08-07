@@ -50,7 +50,7 @@ void FluxSD::Initialize(G4HCofThisEvent* HCE)
 
 //---------------------------------------------------------------------------
 
-G4bool FluxSD::ProcessHits( G4Step* aStep,G4TouchableHistory* )
+G4bool FluxSD::ProcessHits( G4Step*,G4TouchableHistory* )
 { 
   return false;
 }

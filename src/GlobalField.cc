@@ -7,27 +7,30 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+//---------------------------------------------------------------------------
 
-GlobalField::GlobalField() {
- 
-  mLHRSMomentum = 1.1;
-  mRHRSMomentum = 1.1;
-  fMapField = new BField_Septum_New( mLHRSMomentum, mRHRSMomentum, "Septa-JB_map.table" );
+GlobalField::GlobalField(G4double mom, G4double scale, const char* mapname) {
 
-  SeptumFieldScale = 1.0;
+  fHRSMomentum = mom;
+  fSeptumFieldScale = scale; 
+  
+  fMapField = new BField_Septum_New( mapname );
 }
 
+//---------------------------------------------------------------------------
 
 GlobalField::~GlobalField() {
   delete fMapField;
 }
+
+//---------------------------------------------------------------------------
 
 void GlobalField::GetFieldValue(const double Point[3], double *Bfield) const {
 
   unsigned int i;
   for( i = 0; i < 3; i++ ){ Bfield[i] = 0.0; }
 
-  if (Point[2]>(-100.+105.29)*cm && Point[2]<(250+105.29)*cm)
+  if (Point[2]>(-100.)*cm && Point[2]<(250)*cm)
     {
 	  G4double pos_sept[3]={Point[0], Point[1], Point[2]};
 	  G4double B_sept[3]={0,0,0};
@@ -36,9 +39,9 @@ void GlobalField::GetFieldValue(const double Point[3], double *Bfield) const {
 	  B_sept[1]*=2.2/2.140045;
 	  B_sept[2]*=2.2/2.140045;
 
- 	  Bfield[0]+=SeptumFieldScale*B_sept[0]*(mLHRSMomentum/GeV)/2.2;
-	  Bfield[1]+=SeptumFieldScale*B_sept[1]*(mLHRSMomentum/GeV)/2.2;
- 	  Bfield[2]+=SeptumFieldScale*B_sept[2]*(mLHRSMomentum/GeV)/2.2;
+ 	  Bfield[0]+=fSeptumFieldScale*B_sept[0]*(fHRSMomentum/GeV)/2.2;
+	  Bfield[1]+=fSeptumFieldScale*B_sept[1]*(fHRSMomentum/GeV)/2.2;
+ 	  Bfield[2]+=fSeptumFieldScale*B_sept[2]*(fHRSMomentum/GeV)/2.2;
     }
   return;
 }

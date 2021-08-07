@@ -13,20 +13,20 @@
 PrimaryGeneratorMessenger::PrimaryGeneratorMessenger( PrimaryGeneratorAction* Gun )
 :fAction(Gun)
 {
-  fGunDir = new G4UIdirectory("/APEXMC/generator/");
+  fGunDir = new G4UIdirectory("/APEXG4MC/generator/");
   fGunDir->SetGuidance("PrimaryGenerator control");
 
-  fSetInputCmd = new G4UIcmdWithAString("/APEXMC/generator/InputFile",this);
+  fSetInputCmd = new G4UIcmdWithAString("/APEXG4MC/generator/InputFile",this);
   fSetInputCmd->SetGuidance("Set the file with the input ROOT ntuple");
   fSetInputCmd->SetParameterName("inputfile",false);
   fSetInputCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  fSetModeCmd = new G4UIcmdWithAnInteger("/APEXMC/generator/Mode",this);
+  fSetModeCmd = new G4UIcmdWithAnInteger("/APEXG4MC/generator/Mode",this);
   fSetModeCmd->SetGuidance("Set the mode of the generator, command line, GPS or ROOT");
   fSetModeCmd->SetParameterName("Mode",false);
   fSetModeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  fSetSeedCmd = new G4UIcmdWithAnInteger("/APEXMC/generator/Seed",this);
+  fSetSeedCmd = new G4UIcmdWithAnInteger("/APEXG4MC/generator/Seed",this);
   fSetSeedCmd->SetGuidance("Set the random seed for the generator");
   fSetSeedCmd->SetParameterName("Seed",false);
   fSetSeedCmd->AvailableForStates(G4State_PreInit,G4State_Idle);

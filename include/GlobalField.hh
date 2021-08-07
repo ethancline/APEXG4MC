@@ -11,15 +11,15 @@ class BField_Septum_New;
 
 class GlobalField : public G4MagneticField {
 public:
-  GlobalField();
+  GlobalField(G4double, G4double, const char*);
   ~GlobalField();
 
   void GetFieldValue( const  double Point[3], double *Bfield ) const;
 
   BField_Septum_New *fMapField;
-  G4double SeptumFieldScale;
-  G4double mLHRSMomentum;
-  G4double mRHRSMomentum;
+  G4double fSeptumFieldScale;
+  G4double fHRSMomentum;
+
 
 };
 

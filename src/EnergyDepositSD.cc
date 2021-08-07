@@ -53,7 +53,6 @@ void EnergyDepositSD::Initialize(G4HCofThisEvent* HCE)
 G4bool EnergyDepositSD::ProcessHits( G4Step* aStep,G4TouchableHistory* )
 { 
 
-  G4Track*              aTrack       = aStep->GetTrack();
   G4TouchableHistory*   theTouchable = (G4TouchableHistory*)(aStep->GetPostStepPoint()->GetTouchable());
   G4VPhysicalVolume*    volume       = theTouchable->GetVolume();
   G4int                 id           = volume->GetCopyNo();
@@ -82,7 +81,7 @@ return true;
 
 //---------------------------------------------------------------------------
 
-G4bool EnergyDepositSD::ProcessHits_constStep(const G4Step* aStep,G4TouchableHistory*)
+G4bool EnergyDepositSD::ProcessHits_constStep(const G4Step*,G4TouchableHistory*)
 {
   return false;
 }

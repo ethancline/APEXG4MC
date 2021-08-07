@@ -31,8 +31,10 @@ AnalysisManager::AnalysisManager()
 
 AnalysisManager::~AnalysisManager()
 {
-   fROOTtree->Write();
-   fROOTfile->Close();
+  if(fROOTfile) {
+    fROOTtree->Write();
+    fROOTfile->Close();
+  }
 }
 
 //---------------------------------------------------------------------------
