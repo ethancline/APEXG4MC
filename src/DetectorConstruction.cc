@@ -56,8 +56,8 @@ DetectorConstruction::DetectorConstruction()
   fDetMessenger = new DetectorMessenger(this);
 
   fHRSAngle     = 12.5;
-  fDistTarPivot = 105.29;
-  fDistPivotQ1  = 159.03;
+  fDistTarPivot = 105.29;  // from original APEX G4
+  fDistPivotQ1  = 171.095; // Q1 SOS (from original APEX G4)
 
   fHRSMomentum   = 1.1;
   fScaleSeptum  = 1.0;
@@ -164,8 +164,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Septum 
   //--------------------------------------------------------------------------- 
   double inch           = 2.54*cm;
-  double y_en = 2.44*inch;
-  double y_ex = 4.7 *inch;
+  double y_en           = 2.44*inch;
+  double y_ex           = 4.7 *inch;
   double zlength        = 173.939*cm;
   double z_sep_cen      = zlength*tan(5.*deg)/tan(12.5*deg);
   double z_real_tar     = z_sep_cen-zlength;
@@ -199,19 +199,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   double z_sept_ex_min2 = z_sept_en_min2 + length_min_2 * cos(ang_en_min_2);
   double z_sept_ex_max2 = z_sept_en_max2 + length_max_2 * cos(ang_en_max_2);
 
-  double ymin_sep_ex1 = y_en + (z_sept_ex_min1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-  double ymax_sep_ex1 = y_en + (z_sept_ex_max1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-  double ymin_sep_en1 = y_en + (z_sept_en_min1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-  double ymax_sep_en1 = y_en + (z_sept_en_max1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymin_sep_ex1   = y_en + (z_sept_ex_min1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymax_sep_ex1   = y_en + (z_sept_ex_max1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymin_sep_en1   = y_en + (z_sept_en_min1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymax_sep_en1   = y_en + (z_sept_en_max1-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
 
+  double ymin_sep_ex2   = y_en + (z_sept_ex_min2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymax_sep_ex2   = y_en + (z_sept_ex_max2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymin_sep_en2   = y_en + (z_sept_en_min2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
+  double ymax_sep_en2   = y_en + (z_sept_en_max2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
 
-  double ymin_sep_ex2 = y_en + (z_sept_ex_min2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-  double ymax_sep_ex2 = y_en + (z_sept_ex_max2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-  double ymin_sep_en2 = y_en + (z_sept_en_min2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-  double ymax_sep_en2 = y_en + (z_sept_en_max2-z_sept_en_max1)/(z_sept_ex_min2-z_sept_en_max1)*(y_ex-y_en);
-
-  G4double  pDz_1=0.31*inch/2.;
-  G4double  pDz_2=0.25*inch/2.;
+  G4double  pDz_1       = 0.31*inch/2.;
+  G4double  pDz_2       = 0.25*inch/2.;
   
   //---------------------------------LEFT SEPTUM HALF----------------------------------------------
   //LHS Back Right Vertices
@@ -523,20 +522,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //------------------------------End of Septum----------------------------------------
   
   //--------------------------------------------------------------------------- 
-  // Create Q1 Virtual Detectors
+  // Create Q1 SOS (from original APEX G4)
   //--------------------------------------------------------------------------- 
+
+  double pQ1Rin          = 12.827 *cm;
+  double pQ1Length       = 1.0 *cm;
   
-   G4Box* Q1_box           = new G4Box("Q1_box", 
-				       0.20 *m, 0.20 *m, 0.05 *m ); 
-   
-  G4LogicalVolume* Q1_log = new G4LogicalVolume(Q1_box, 
+  G4VSolid* Q1_tubs      = new G4Tubs("Q1Front",
+				      0, 2*(pQ1Rin+1.*cm), pQ1Length/2., // make virtual detector radius 1cm larger
+				      0.0, 360.0*deg);
+  
+  G4LogicalVolume* Q1_log = new G4LogicalVolume(Q1_tubs,
 						fNistManager->FindOrBuildMaterial("G4_AIR"), 
 						"Q1_log", 0, 0, 0); 
 
   //--------------------------------------------------------------------------- 
     
   G4double LQ1_th           = fHRSAngle *deg; 
-  G4double LQ1_d            = fDistPivotQ1 *cm; 
+  G4double LQ1_d            = fDistPivotQ1 *cm - pQ1Length; 
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
   G4RotationMatrix* LQ1_rm  = new G4RotationMatrix(); 
@@ -548,7 +551,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //--------------------------------------------------------------------------- 
   
   G4double RQ1_th           = -fHRSAngle *deg; 
-  G4double RQ1_d            = fDistPivotQ1 *cm;
+  G4double RQ1_d            = fDistPivotQ1 *cm - pQ1Length; 
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
   G4RotationMatrix* RQ1_rm  = new G4RotationMatrix(); 
