@@ -146,7 +146,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 						   Beamline,
 						   "scatv_log", 0, 0, 0);
   
-  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,-fDistTarPivot*cm),scatv_log, "scatv", expHall_log, false, nonSDcounter++);
+  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,-fDistTarPivot*cm),scatv_log, "scatv", expHall_log, false, ++nonSDcounter);
   
   //---------------------------------------------------------------------------
   
@@ -158,7 +158,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 						  fNistManager->FindOrBuildMaterial("G4_Al"),
 						  "scat_log", 0, 0, 0);
   
-  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,-fDistTarPivot*cm),scat_log, "scat", expHall_log, false, nonSDcounter++);
+  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,-fDistTarPivot*cm),scat_log, "scat", expHall_log, false, ++nonSDcounter);
 
   //--------------------------------------------------------------------------- 
   // Create Septum 
@@ -233,7 +233,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotY90deg_en1_min=new G4RotationMatrix();
   pRotY90deg_en1_min->rotateY(90.*deg-ang_en_min_1);
   new G4PVPlacement(pRotY90deg_en1_min,G4ThreeVector(pDz_1+xmin_sep_en1-0.02*mm,0,z_sept_en_min1), 
-		    trrap_en1_min,"trrap_en1_min",expHall_log,0,nonSDcounter++);
+		    trrap_en1_min,"trrap_en1_min",expHall_log,0,++nonSDcounter);
 
 
   //LHS Back Left Vertices
@@ -254,7 +254,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotY90deg_en1_max=new G4RotationMatrix();
   pRotY90deg_en1_max->rotateY(90.*deg-ang_en_min_1);
   new G4PVPlacement(pRotY90deg_en1_max,G4ThreeVector(pDz_1+xmax_sep_en1+0.02*mm,0,z_sept_en_max1), 
-		    trrap_en1_max,"trrap_en1_max",expHall_log,0,nonSDcounter++);
+		    trrap_en1_max,"trrap_en1_max",expHall_log,0,++nonSDcounter);
 
 
   //LHS Front Left Vertices
@@ -276,7 +276,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotY90deg_en2_max=new G4RotationMatrix();
   pRotY90deg_en2_max->rotateY(90.*deg-ang_en_max_2);
   new G4PVPlacement(pRotY90deg_en2_max,G4ThreeVector(pDz_1+xmax_sep_en2+0.02*mm,0,z_sept_en_max2), 
-		    trrap_en2_max,"trrap_en2_max",expHall_log,0,nonSDcounter++);
+		    trrap_en2_max,"trrap_en2_max",expHall_log,0,++nonSDcounter);
 
 
   //LHS Front Right Vertices
@@ -298,7 +298,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotY90deg_en2_min=new G4RotationMatrix();
   pRotY90deg_en2_min->rotateY(90.*deg-ang_en_min_2);
   new G4PVPlacement(pRotY90deg_en2_min,G4ThreeVector(-1.*pDz_1+xmin_sep_en2-0.02*mm,0,z_sept_en_min2), 
-		    trrap_en2_min,"trrap_en2_min",expHall_log,0,nonSDcounter++);
+		    trrap_en2_min,"trrap_en2_min",expHall_log,0,++nonSDcounter);
 
 
 
@@ -321,7 +321,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotX90deg_cov_1_up=new G4RotationMatrix();
   pRotX90deg_cov_1_up->rotateX(-90.*deg+atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
   new G4PVPlacement(pRotX90deg_cov_1_up,G4ThreeVector(0,0.02*mm+ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.), 
-		    trrap_cov_1_up,"cov1_up",expHall_log,0,nonSDcounter++);
+		    trrap_cov_1_up,"cov1_up",expHall_log,0,++nonSDcounter);
 
 
 
@@ -332,7 +332,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotX90deg_cov_1_bot=new G4RotationMatrix();
   pRotX90deg_cov_1_bot->rotateX(-90.*deg-atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
   new G4PVPlacement(pRotX90deg_cov_1_bot,G4ThreeVector(0,-0.02*mm-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.), 
-		    trrap_cov_1_bot,"cov1_bot",expHall_log,0,nonSDcounter++);
+		    trrap_cov_1_bot,"cov1_bot",expHall_log,0,++nonSDcounter);
   trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
 
 
@@ -355,7 +355,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotX90deg_cov_2_up=new G4RotationMatrix();
   pRotX90deg_cov_2_up->rotateX(-90.*deg+atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
   new G4PVPlacement(pRotX90deg_cov_2_up,G4ThreeVector(0, 0.02*mm+ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.), 
-		    trrap_cov_2_up,"cov2_up",expHall_log,0,nonSDcounter++);
+		    trrap_cov_2_up,"cov2_up",expHall_log,0,++nonSDcounter);
 
   
   //RHS Front Bottom Trap
@@ -365,7 +365,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *pRotX90deg_cov_2_bot=new G4RotationMatrix();
   pRotX90deg_cov_2_bot->rotateX(-90.*deg-atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
   new G4PVPlacement(pRotX90deg_cov_2_bot,G4ThreeVector(0,-0.02*mm-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.), 
-		    trrap_cov_2_bot,"cov2_bot",expHall_log,0,nonSDcounter++);
+		    trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
 
   //----------------------------------RIGHT SEPTUM HALF----------------------------------------
   //RHS Back Left Vertices
@@ -387,7 +387,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotY90deg_en1_min=new G4RotationMatrix();
   r_pRotY90deg_en1_min->rotateY(90*deg+ang_en_max_1);
   new G4PVPlacement(r_pRotY90deg_en1_min,G4ThreeVector(1.*pDz_1-xmin_sep_en1,0,z_sept_en_min1), 
-		    r_trrap,"vac Box en1 min",expHall_log,0,nonSDcounter++);
+		    r_trrap,"vac Box en1 min",expHall_log,0,++nonSDcounter);
 
 
   //RHS Back Right Vertices
@@ -409,7 +409,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotY90deg_en1_max=new G4RotationMatrix();
   r_pRotY90deg_en1_max->rotateY(90.*deg+ang_en_min_1);
   new G4PVPlacement(r_pRotY90deg_en1_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en1),0,z_sept_en_max1),
-		    r_trrap_en1_max,"trrap_en1_max",expHall_log,0,nonSDcounter++);
+		    r_trrap_en1_max,"trrap_en1_max",expHall_log,0,++nonSDcounter);
 
 
   //RHS Front Right Vertices
@@ -431,7 +431,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotY90deg_en2_max=new G4RotationMatrix();
   r_pRotY90deg_en2_max->rotateY(90.*deg+ang_en_max_2);
   new G4PVPlacement(r_pRotY90deg_en2_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en2),0,z_sept_en_max2),
-		    r_trrap_en2_max,"trrap_en2_max",expHall_log,0,nonSDcounter++);
+		    r_trrap_en2_max,"trrap_en2_max",expHall_log,0,++nonSDcounter);
 
 
   //RHS Front Left Trap Vertices
@@ -453,7 +453,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotY90deg_en2_min=new G4RotationMatrix();
   r_pRotY90deg_en2_min->rotateY(90.*deg+ang_en_min_2);
   new G4PVPlacement(r_pRotY90deg_en2_min,G4ThreeVector(pDz_1-xmin_sep_en2,0,z_sept_en_min2),
-		    r_trrap_en2_min,"trrap_en2_min",expHall_log,0,nonSDcounter++);
+		    r_trrap_en2_min,"trrap_en2_min",expHall_log,0,++nonSDcounter);
 
 
   //RHS Back Top and Bottom Vertices
@@ -475,7 +475,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotX90deg_cov_1_up=new G4RotationMatrix();
   r_pRotX90deg_cov_1_up->rotateX(-90.*deg+atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
   new G4PVPlacement(r_pRotX90deg_cov_1_up,G4ThreeVector(0,ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.),
-		    r_trrap_cov_1_up,"cov1_up",expHall_log,0,nonSDcounter++);
+		    r_trrap_cov_1_up,"cov1_up",expHall_log,0,++nonSDcounter);
 
   
   //RHS Back Bottom Trap
@@ -485,7 +485,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotX90deg_cov_1_bot=new G4RotationMatrix();
   r_pRotX90deg_cov_1_bot->rotateX(-90.*deg-atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
   new G4PVPlacement(r_pRotX90deg_cov_1_bot,G4ThreeVector(0,-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.),
-		    r_trrap_cov_1_bot,"cov1_bot",expHall_log,0,nonSDcounter++);
+		    r_trrap_cov_1_bot,"cov1_bot",expHall_log,0,++nonSDcounter);
   r_trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
 
 
@@ -508,7 +508,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotX90deg_cov_2_up=new G4RotationMatrix();
   r_pRotX90deg_cov_2_up->rotateX(-90.*deg+atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
   new G4PVPlacement(r_pRotX90deg_cov_2_up,G4ThreeVector(0,     ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
-		    r_trrap_cov_2_up,"cov2_up",expHall_log,0,nonSDcounter++);
+		    r_trrap_cov_2_up,"cov2_up",expHall_log,0,++nonSDcounter);
 
 
   //RHS Front Bottom Trap
@@ -518,7 +518,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix *r_pRotX90deg_cov_2_bot=new G4RotationMatrix();
   r_pRotX90deg_cov_2_bot->rotateX(-90.*deg-atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
   new G4PVPlacement(r_pRotX90deg_cov_2_bot,G4ThreeVector(0,-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
-		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,nonSDcounter++);
+		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
   
   //------------------------------End of Septum----------------------------------------
   
@@ -526,8 +526,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Q1 Virtual Detectors
   //--------------------------------------------------------------------------- 
   
- 
-  G4Box* Q1_box           = new G4Box("Q1_box", 
+   G4Box* Q1_box           = new G4Box("Q1_box", 
 				       0.20 *m, 0.20 *m, 0.05 *m ); 
    
   G4LogicalVolume* Q1_log = new G4LogicalVolume(Q1_box, 
@@ -556,7 +555,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   RQ1_rm->rotateY(RQ1_th); 
      
   fDetVol[1]                    = new G4PVPlacement(RQ1_rm, G4ThreeVector(RQ1_xprime,0.,RQ1_zprime), 
-						    Q1_log, "RQ1", expHall_log, false, SDcounter++); 
+						    Q1_log, "RQ1", expHall_log, false, ++SDcounter); 
 
   //---------------------------------------------------------------------------
   // Set Logical Attributes
