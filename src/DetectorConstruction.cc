@@ -55,6 +55,14 @@ DetectorConstruction::DetectorConstruction()
   fNistManager  = G4NistManager::Instance();
   fDetMessenger = new DetectorMessenger(this);
 
+  fHRSAngle     = 12.5;
+  fDistTarPivot = 105.29;
+  fDistPivotQ1  = 159.03;
+
+  fHRSMomentum   = 1.1;
+  fScaleSeptum  = 1.0;
+  fFieldMapFile = "Septa-JB_map.table";
+    
   G4UImanager* UI = G4UImanager::GetUIpointer();
   G4String command = "/control/execute ../macros/DetectorSetup.mac";
   UI->ApplyCommand(command);
@@ -76,33 +84,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
 
+  double LarmStepLimit=2.000 * mm; //why
+  G4UserLimits* LarmStepLimits = new G4UserLimits(LarmStepLimit);
+  G4int nonSDcounter = 100;
+  G4int SDcounter    = 0;
+
   //---------------------------------------------------------------------------
   // Set up magnetic field
   //---------------------------------------------------------------------------
 
-
-  G4MagneticField *fMagField = new GlobalField();
+  G4MagneticField *fMagField = new GlobalField(fHRSMomentum, fScaleSeptum, fFieldMapFile);
   G4FieldManager *fm = new G4FieldManager(fMagField);
   G4Mag_SpinEqRhs* fBMTequation = new G4Mag_SpinEqRhs(fMagField);
   G4MagIntegratorStepper *pStepper = new G4ClassicalRK4(fBMTequation,12);
   G4ChordFinder *cftemp = new G4ChordFinder(fMagField, 0.01*mm, pStepper);
   fm->SetChordFinder(cftemp);
 
-  double LarmStepLimit=2.000 * mm; //why
-  G4UserLimits* LarmStepLimits = new G4UserLimits(LarmStepLimit);
-  
   //---------------------------------------------------------------------------
   // Define Materials
   //---------------------------------------------------------------------------
   
   G4Element*  N   = fNistManager->FindOrBuildElement(7);
   G4Element*  O   = fNistManager->FindOrBuildElement(8);
-  G4Element*  W = fNistManager->FindOrBuildElement(74);
   
-  G4Material* Air      = new G4Material("Air", 1.290*mg/cm3, 2 );
-  Air->AddElement(N, 0.7);
-  Air->AddElement(O, 0.3);
-
   G4Material* Beamline = new G4Material("Beam", 1.e-5*g/cm3, 2, kStateGas, STP_Temperature, 2.e-2*bar );
   Beamline->AddElement(N, 0.7);
   Beamline->AddElement(O, 0.3);
@@ -112,14 +116,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //---------------------------------------------------------------------------
 
   G4Box* expHall_box           = new G4Box("expHall_box",
-					   5. *m, 1.0 *m, 5. *m );
+					   2.5 *m, 1.0 *m, 4.0 *m );
 
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,
 						     fNistManager->FindOrBuildMaterial("G4_AIR"),
 						     "expHall_log", 0, 0, 0);
 
   fExpHall                     = new G4PVPlacement(0, G4ThreeVector(),
-						   expHall_log, "expHall", 0, false, 0);
+						   expHall_log, "expHall", 0, false, nonSDcounter);
 
   //---------------------------------------------------------------------------
   // Create Scattering Chamber
@@ -142,7 +146,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 						   Beamline,
 						   "scatv_log", 0, 0, 0);
   
-  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,0),scatv_log, "scatv", expHall_log, false, 0);
+  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,-fDistTarPivot*cm),scatv_log, "scatv", expHall_log, false, ++nonSDcounter);
   
   //---------------------------------------------------------------------------
   
@@ -154,26 +158,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 						  fNistManager->FindOrBuildMaterial("G4_Al"),
 						  "scat_log", 0, 0, 0);
   
-  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,0),scat_log, "scat", expHall_log, false, 0);
-
-  //---------------------------------------------------------------------------
-  // Create Vertical Wire Targets
-  //---------------------------------------------------------------------------
-  
-  G4double vwire_outrad   = 0.5 *mm;
-  G4double vwire_height   = 10.0 *mm;
-  
-  G4Tubs* vwire_tubs         = new G4Tubs("vwire_tubs",
-					  0.0, vwire_outrad, vwire_height,
-					  0.0, 360.0 *deg );
-  
-  G4LogicalVolume* vwire_log = new G4LogicalVolume(vwire_tubs,
-						   fNistManager->FindOrBuildMaterial("G4_Al"),
-						   "vwire_log", 0, 0, 0);
-  
-  new G4PVPlacement(0, G4ThreeVector(0,-20.0*mm,0.0), vwire_log, "v1", scatv_log, false, 0); 
-  new G4PVPlacement(0, G4ThreeVector(0,0,0), vwire_log, "v2", scatv_log, false, 0);  
-  new G4PVPlacement(0, G4ThreeVector(0,20.0*mm,0.0), vwire_log, "v3", scatv_log, false, 0); 
+  new G4PVPlacement(scat_rm, G4ThreeVector(0,0,-fDistTarPivot*cm),scat_log, "scat", expHall_log, false, ++nonSDcounter);
 
   //--------------------------------------------------------------------------- 
   // Create Septum 
@@ -247,8 +232,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_en1_min->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotY90deg_en1_min=new G4RotationMatrix();
   pRotY90deg_en1_min->rotateY(90.*deg-ang_en_min_1);
-  new G4PVPlacement(pRotY90deg_en1_min,G4ThreeVector(pDz_1+xmin_sep_en1-0.02*mm,0,z_sept_en_min1+105.29* cm), 
-		    trrap_en1_min,"trrap_en1_min",expHall_log,0,0,0);
+  new G4PVPlacement(pRotY90deg_en1_min,G4ThreeVector(pDz_1+xmin_sep_en1-0.02*mm,0,z_sept_en_min1), 
+		    trrap_en1_min,"trrap_en1_min",expHall_log,0,++nonSDcounter);
 
 
   //LHS Back Left Vertices
@@ -268,8 +253,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_en1_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotY90deg_en1_max=new G4RotationMatrix();
   pRotY90deg_en1_max->rotateY(90.*deg-ang_en_min_1);
-  new G4PVPlacement(pRotY90deg_en1_max,G4ThreeVector(pDz_1+xmax_sep_en1+0.02*mm,0,z_sept_en_max1+105.29* cm), 
-		    trrap_en1_max,"trrap_en1_max",expHall_log,0,0,0);
+  new G4PVPlacement(pRotY90deg_en1_max,G4ThreeVector(pDz_1+xmax_sep_en1+0.02*mm,0,z_sept_en_max1), 
+		    trrap_en1_max,"trrap_en1_max",expHall_log,0,++nonSDcounter);
 
 
   //LHS Front Left Vertices
@@ -290,8 +275,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_en2_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotY90deg_en2_max=new G4RotationMatrix();
   pRotY90deg_en2_max->rotateY(90.*deg-ang_en_max_2);
-  new G4PVPlacement(pRotY90deg_en2_max,G4ThreeVector(pDz_1+xmax_sep_en2+0.02*mm,0,z_sept_en_max2+105.29* cm), 
-		    trrap_en2_max,"trrap_en2_max",expHall_log,0,0,0);
+  new G4PVPlacement(pRotY90deg_en2_max,G4ThreeVector(pDz_1+xmax_sep_en2+0.02*mm,0,z_sept_en_max2), 
+		    trrap_en2_max,"trrap_en2_max",expHall_log,0,++nonSDcounter);
 
 
   //LHS Front Right Vertices
@@ -312,8 +297,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_en2_min->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotY90deg_en2_min=new G4RotationMatrix();
   pRotY90deg_en2_min->rotateY(90.*deg-ang_en_min_2);
-  new G4PVPlacement(pRotY90deg_en2_min,G4ThreeVector(-1.*pDz_1+xmin_sep_en2-0.02*mm,0,z_sept_en_min2+105.29* cm), 
-		    trrap_en2_min,"trrap_en2_min",expHall_log,0,0,0);
+  new G4PVPlacement(pRotY90deg_en2_min,G4ThreeVector(-1.*pDz_1+xmin_sep_en2-0.02*mm,0,z_sept_en_min2), 
+		    trrap_en2_min,"trrap_en2_min",expHall_log,0,++nonSDcounter);
 
 
 
@@ -335,8 +320,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_cov_1_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_1_up=new G4RotationMatrix();
   pRotX90deg_cov_1_up->rotateX(-90.*deg+atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(pRotX90deg_cov_1_up,G4ThreeVector(0,0.02*mm+ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),105.29* cm), 
-		    trrap_cov_1_up,"cov1_up",expHall_log,0,0,0);
+  new G4PVPlacement(pRotX90deg_cov_1_up,G4ThreeVector(0,0.02*mm+ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.), 
+		    trrap_cov_1_up,"cov1_up",expHall_log,0,++nonSDcounter);
 
 
 
@@ -346,8 +331,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_1_bot=new G4RotationMatrix();
   pRotX90deg_cov_1_bot->rotateX(-90.*deg-atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(pRotX90deg_cov_1_bot,G4ThreeVector(0,-0.02*mm-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),105.29* cm), 
-		    trrap_cov_1_bot,"cov1_bot",expHall_log,0,0,0);
+  new G4PVPlacement(pRotX90deg_cov_1_bot,G4ThreeVector(0,-0.02*mm-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.), 
+		    trrap_cov_1_bot,"cov1_bot",expHall_log,0,++nonSDcounter);
   trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
 
 
@@ -369,8 +354,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_cov_2_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_2_up=new G4RotationMatrix();
   pRotX90deg_cov_2_up->rotateX(-90.*deg+atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(pRotX90deg_cov_2_up,G4ThreeVector(0, 0.02*mm+ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),+105.29* cm), 
-		    trrap_cov_2_up,"cov2_up",expHall_log,0,0,0);
+  new G4PVPlacement(pRotX90deg_cov_2_up,G4ThreeVector(0, 0.02*mm+ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.), 
+		    trrap_cov_2_up,"cov2_up",expHall_log,0,++nonSDcounter);
 
   
   //RHS Front Bottom Trap
@@ -379,8 +364,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   trrap_cov_2_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_2_bot=new G4RotationMatrix();
   pRotX90deg_cov_2_bot->rotateX(-90.*deg-atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(pRotX90deg_cov_2_bot,G4ThreeVector(0,-0.02*mm-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),+105.29* cm), 
-		    trrap_cov_2_bot,"cov2_bot",expHall_log,0,0,0);
+  new G4PVPlacement(pRotX90deg_cov_2_bot,G4ThreeVector(0,-0.02*mm-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.), 
+		    trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
 
   //----------------------------------RIGHT SEPTUM HALF----------------------------------------
   //RHS Back Left Vertices
@@ -401,8 +386,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotY90deg_en1_min=new G4RotationMatrix();
   r_pRotY90deg_en1_min->rotateY(90*deg+ang_en_max_1);
-  new G4PVPlacement(r_pRotY90deg_en1_min,G4ThreeVector(1.*pDz_1-xmin_sep_en1,0,z_sept_en_min1+105.29* cm), 
-		    r_trrap,"vac Box en1 min",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotY90deg_en1_min,G4ThreeVector(1.*pDz_1-xmin_sep_en1,0,z_sept_en_min1), 
+		    r_trrap,"vac Box en1 min",expHall_log,0,++nonSDcounter);
 
 
   //RHS Back Right Vertices
@@ -423,8 +408,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_en1_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotY90deg_en1_max=new G4RotationMatrix();
   r_pRotY90deg_en1_max->rotateY(90.*deg+ang_en_min_1);
-  new G4PVPlacement(r_pRotY90deg_en1_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en1),0,z_sept_en_max1+105.29* cm),
-		    r_trrap_en1_max,"trrap_en1_max",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotY90deg_en1_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en1),0,z_sept_en_max1),
+		    r_trrap_en1_max,"trrap_en1_max",expHall_log,0,++nonSDcounter);
 
 
   //RHS Front Right Vertices
@@ -445,8 +430,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_en2_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotY90deg_en2_max=new G4RotationMatrix();
   r_pRotY90deg_en2_max->rotateY(90.*deg+ang_en_max_2);
-  new G4PVPlacement(r_pRotY90deg_en2_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en2),0,z_sept_en_max2+105.29* cm),
-		    r_trrap_en2_max,"trrap_en2_max",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotY90deg_en2_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en2),0,z_sept_en_max2),
+		    r_trrap_en2_max,"trrap_en2_max",expHall_log,0,++nonSDcounter);
 
 
   //RHS Front Left Trap Vertices
@@ -467,8 +452,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_en2_min->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotY90deg_en2_min=new G4RotationMatrix();
   r_pRotY90deg_en2_min->rotateY(90.*deg+ang_en_min_2);
-  new G4PVPlacement(r_pRotY90deg_en2_min,G4ThreeVector(pDz_1-xmin_sep_en2,0,z_sept_en_min2+105.29* cm),
-		    r_trrap_en2_min,"trrap_en2_min",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotY90deg_en2_min,G4ThreeVector(pDz_1-xmin_sep_en2,0,z_sept_en_min2),
+		    r_trrap_en2_min,"trrap_en2_min",expHall_log,0,++nonSDcounter);
 
 
   //RHS Back Top and Bottom Vertices
@@ -489,8 +474,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_cov_1_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_1_up=new G4RotationMatrix();
   r_pRotX90deg_cov_1_up->rotateX(-90.*deg+atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(r_pRotX90deg_cov_1_up,G4ThreeVector(0,ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),105.29* cm),
-		    r_trrap_cov_1_up,"cov1_up",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotX90deg_cov_1_up,G4ThreeVector(0,ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.),
+		    r_trrap_cov_1_up,"cov1_up",expHall_log,0,++nonSDcounter);
 
   
   //RHS Back Bottom Trap
@@ -499,8 +484,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_1_bot=new G4RotationMatrix();
   r_pRotX90deg_cov_1_bot->rotateX(-90.*deg-atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(r_pRotX90deg_cov_1_bot,G4ThreeVector(0,-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),105.29* cm),
-		    r_trrap_cov_1_bot,"cov1_bot",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotX90deg_cov_1_bot,G4ThreeVector(0,-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.),
+		    r_trrap_cov_1_bot,"cov1_bot",expHall_log,0,++nonSDcounter);
   r_trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
 
 
@@ -522,8 +507,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_cov_2_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_2_up=new G4RotationMatrix();
   r_pRotX90deg_cov_2_up->rotateX(-90.*deg+atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(r_pRotX90deg_cov_2_up,G4ThreeVector(0,     ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),105.29* cm),
-		    r_trrap_cov_2_up,"cov2_up",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotX90deg_cov_2_up,G4ThreeVector(0,     ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
+		    r_trrap_cov_2_up,"cov2_up",expHall_log,0,++nonSDcounter);
 
 
   //RHS Front Bottom Trap
@@ -532,85 +517,64 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_trrap_cov_2_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_2_bot=new G4RotationMatrix();
   r_pRotX90deg_cov_2_bot->rotateX(-90.*deg-atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(r_pRotX90deg_cov_2_bot,G4ThreeVector(0,-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),105.29* cm),
-		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,0,0);
+  new G4PVPlacement(r_pRotX90deg_cov_2_bot,G4ThreeVector(0,-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
+		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
   
   //------------------------------End of Septum----------------------------------------
   
   //--------------------------------------------------------------------------- 
-  // Create Left Q1 Virtual Detector
+  // Create Q1 Virtual Detectors
   //--------------------------------------------------------------------------- 
   
+   G4Box* Q1_box           = new G4Box("Q1_box", 
+				       0.20 *m, 0.20 *m, 0.05 *m ); 
+   
+  G4LogicalVolume* Q1_log = new G4LogicalVolume(Q1_box, 
+						fNistManager->FindOrBuildMaterial("G4_AIR"), 
+						"Q1_log", 0, 0, 0); 
+
+  //--------------------------------------------------------------------------- 
+    
   G4double LQ1_th           = fHRSAngle *deg; 
-  G4double LQ1_d            = 3.5 *m; 
+  G4double LQ1_d            = fDistPivotQ1 *cm; 
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
   G4RotationMatrix* LQ1_rm  = new G4RotationMatrix(); 
   LQ1_rm->rotateY(LQ1_th); 
- 
-  //--------------------------------------------------------------------------- 
-  
-  G4Box* LQ1_box           = new G4Box("LQ1_box", 
-				       0.20 *m, 0.20 *m, 0.05 *m ); 
-   
-  G4LogicalVolume* LQ1_log = new G4LogicalVolume(LQ1_box, 
-						 fNistManager->FindOrBuildMaterial("G4_AIR"), 
-						 "LQ1_log", 0, 0, 0); 
-     
+
   fDetVol[0]                    = new G4PVPlacement(LQ1_rm, G4ThreeVector(LQ1_xprime,0.,LQ1_zprime), 
-						    LQ1_log, "LQ1", expHall_log, false, 0);
+						    Q1_log, "LQ1", expHall_log, false, SDcounter);
 
   //--------------------------------------------------------------------------- 
-  // Create Right Q1 Virtual Detector
-  //--------------------------------------------------------------------------- 
   
-  G4double RQ1_th           = -fHRSAngle * deg; 
-  G4double RQ1_d            = 3.5 *m; 
+  G4double RQ1_th           = -fHRSAngle *deg; 
+  G4double RQ1_d            = fDistPivotQ1 *cm;
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
   G4RotationMatrix* RQ1_rm  = new G4RotationMatrix(); 
   RQ1_rm->rotateY(RQ1_th); 
- 
-  //--------------------------------------------------------------------------- 
-  
-  G4Box* RQ1_box           = new G4Box("RQ1_box", 
-				       0.20 *m, 0.20 *m, 0.05 *m ); 
-   
-  G4LogicalVolume* RQ1_log = new G4LogicalVolume(RQ1_box, 
-						 fNistManager->FindOrBuildMaterial("G4_AIR"), 
- 						 "RQ1_log", 0, 0, 0); 
      
   fDetVol[1]                    = new G4PVPlacement(RQ1_rm, G4ThreeVector(RQ1_xprime,0.,RQ1_zprime), 
-						    RQ1_log, "RQ1", expHall_log, false, 0); 
+						    Q1_log, "RQ1", expHall_log, false, ++SDcounter); 
 
   //---------------------------------------------------------------------------
-  // Set Step Limits, Sensitive Detector and Visualisation
-  //---------------------------------------------------------------------------
-
-  G4double maxStep = 0.1 *mm;;
-  G4UserLimits* stepLimit = new G4UserLimits(maxStep);
-
+  // Set Logical Attributes
   //---------------------------------------------------------------------------
 
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
 
   fFluxSD = new FluxSD("FluxSD", fNSD);
   SDman->AddNewDetector( fFluxSD );
-  LQ1_log->SetSensitiveDetector( fFluxSD );
-  RQ1_log->SetSensitiveDetector( fFluxSD );
+  Q1_log->SetSensitiveDetector( fFluxSD );
 
   //---------------------------------------------------------------------------
 
   G4VisAttributes* blue    = new G4VisAttributes( G4Colour(0.0,0.0,1.0)   );
-  G4VisAttributes* red     = new G4VisAttributes( G4Colour(1.0,0.0,0.0)   );
-
   expHall_log->SetVisAttributes(G4VisAttributes::Invisible);
+  Q1_log->SetVisAttributes(blue);
 
-  LQ1_log->SetVisAttributes(blue);
-  RQ1_log->SetVisAttributes(blue);
-
-  //---------------------------------------------------------------------------                                                                                                                                      
-
+  //---------------------------------------------------------------------------
+  
   expHall_log->SetFieldManager(fm, true);
 
   //---------------------------------------------------------------------------

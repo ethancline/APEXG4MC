@@ -1,2 +1,6 @@
-/APEXG4MC/detector/TargetLength 3.0
-/APEXG4MC/detector/HRSAngle 12.500000
+/APEXG4MC/detector/HRSAngle 12.5
+/APEXG4MC/detector/HRSMomentum 1.1
+/APEXG4MC/detector/DistTarPivot 105.29
+/APEXG4MC/detector/DistPivotQ1 159.03
+/APEXG4MC/detector/SeptumFieldScale 1.0
+/APEXG4MC/detector/SeptumFieldMap Septa-JB_map.table

@@ -9,8 +9,6 @@
 class AnalysisManager;
 class G4UIdirectory;
 class G4UIcmdWithAString;
-class G4UIcmdWithAnInteger;
-class G4UIcmdWithoutParameter;
 
 //---------------------------------------------------------------------------
 

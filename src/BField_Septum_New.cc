@@ -33,28 +33,15 @@ using namespace std;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-BField_Septum_New::BField_Septum_New(double pMomentumL,double pMomentumR, const char *mapfile)
+BField_Septum_New::BField_Septum_New(const char *mapfile)
 {
-
-  //-------------------------------------------------------------
-  // DJH Mod
-  //-------------------------------------------------------------
-
-  fLHRSMomentum = pMomentumL;
-  fSeptumFieldScale = 1.05;
-  
-  //-------------------------------------------------------------
-
   ReadMap(mapfile);
-
 }
 
 //////////////////////////////////////////////////////////////////////
 
 BField_Septum_New::~BField_Septum_New()
 {
-//	delete mRotL2F;
-//	delete mRotF2L;
   delete mBField;
   delete Btxt;
   delete BCoord;
@@ -64,8 +51,6 @@ BField_Septum_New::~BField_Septum_New()
 
 void BField_Septum_New::ReadMap(const char *filename)
 {
-//    Btxt= new float[101][51][201][3];
-//    cout<<"kas stex1?"<<endl;
     nx=101;
     ny=51;
     nz=201;
@@ -83,7 +68,7 @@ void BField_Septum_New::ReadMap(const char *filename)
             {
               Btxt[i][j][k]   =new float [0];
               BCoord[i][j][k] =new float [0];
-              //initial the array
+              //initialize the array
               for (int l=0;l<3;l++)
               {
                     Btxt[i][j][k][l] = 0.0;
@@ -109,7 +94,6 @@ void BField_Septum_New::ReadMap(const char *filename)
           int ix=int(x);
           int iy=int(y);
           int iz=int((z+200.)/2.);
-//          cout<<setw(15)<<ix<<setw(15)<<iy<<setw(15)<<iz<<setw(15)<<x<<setw(15)<<y<<setw(15)<<z<<setw(15)<<bx<<setw(15)<<by<<setw(15)<<bz<<endl;
           Btxt[ix][iy][iz][0]=bx;
           Btxt[ix][iy][iz][1]=by;
           Btxt[ix][iy][iz][2]=bz;
@@ -124,114 +108,67 @@ void BField_Septum_New::ReadMap(const char *filename)
     {
       clog<<"Septum field is missing. we skip this field"<<endl;
     }
-
-//    cout<<"kas stex3?"<<endl;
-/*
-    for (int i=0; i<101; i++)
-    for (int j=0; j<51; j++)
-    for (int k=0; k<201; k++)
-    for (int l=0; l<3; l++)
-    {
-       Btxt[i][j][k][l]=i+j+k*l;
-    }
-    */
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void BField_Septum_New::GetBField(double fPos[3],double fB[3])
 {
+  double sep_cent= 68.6457*cm;   
+  double x_loc=fabs(fPos[0]);
+  double y_loc=fabs(fPos[1]);
+  double z_loc=sep_cent-fPos[2];
 
+  int ix=int(x_loc/cm);
+  int iy=int(y_loc/cm);
+  int iz=int((z_loc/cm + 200)/2.);
 
-  //-------------------------------------------------------------
-  // DJH Mod
-  //-------------------------------------------------------------
-  //    double sep_cent= 68.6457*cm;  //distance from target to septum is 173.939 cm
-    double sep_cent= 173.939*cm;  //distance from target to septum is 173.939 cm    
-    double x_loc=fabs(fPos[0]);
-    double y_loc=fabs(fPos[1]);
-    double z_loc=sep_cent-fPos[2];
+  if ((ix>=0) && (ix<nx-1) && (iy>=0) && (iy<ny-1) && (iz>=0) && (iz<nz-1))
+    {
+      double x1=BCoord[ix][iy][iz][0]*cm;
+      double x2=BCoord[ix+1][iy][iz][0]*cm;
+      double y1=BCoord[ix][iy][iz][1]*cm;
+      double y2=BCoord[ix][iy+1][iz][1]*cm;
+      double z1=BCoord[ix][iy][iz][2]*cm;
+      double z2=BCoord[ix][iy][iz+1][2]*cm;
+      
+      
+      double Bx_y1z1 = Btxt[ix][iy][iz][0] + ((Btxt[ix+1][iy][iz][0]-Btxt[ix][iy][iz][0])/(x2-x1))*(x_loc - x1);
+      double Bx_y2z1 = Btxt[ix][iy+1][iz][0] + ((Btxt[ix+1][iy+1][iz][0]-Btxt[ix][iy+1][iz][0])/(x2-x1))*(x_loc - x1);
+      double Bx_z1   = Bx_y1z1 + (y_loc-y1)*(Bx_y2z1-Bx_y1z1)/(y2-y1);
 
-    //    {
-//        double q1_center = 207.0649*cm;
-//        double q1_entry = 160.0*cm;
-//        double q1_exit = 254.13*cm;
-//        double ztmp_quad1=zn-q1_center;
-        int ix=int(x_loc/cm);
-        int iy=int(y_loc/cm);
-        int iz=int((z_loc/cm + 200)/2.);
+      double Bx_y1z2 = Btxt[ix][iy][iz+1][0] + ((Btxt[ix+1][iy][iz+1][0]-Btxt[ix][iy][iz+1][0])/(x2-x1))*(x_loc - x1);
+      double Bx_y2z2 = Btxt[ix][iy+1][iz+1][0] + ((Btxt[ix+1][iy+1][iz+1][0]-Btxt[ix][iy+1][iz+1][0])/(x2-x1))*(x_loc - x1);
+      double Bx_z2   = Bx_y1z2 + (y_loc-y1)*(Bx_y2z2-Bx_y1z2)/(y2-y1);
 
-//        cout<<"locxyz = "<<ix<<setw(15)<<iy<<setw(15)<<iz<<setw(15)<<x_loc/cm<<setw(15)<<y_loc/cm<<setw(15)<<z_loc/cm<<endl;
-
-        if ((ix>=0) && (ix<nx-1) && (iy>=0) && (iy<ny-1) && (iz>=0) && (iz<nz-1))
-        {
-            double x1=BCoord[ix][iy][iz][0]*cm;
-            double x2=BCoord[ix+1][iy][iz][0]*cm;
-            double y1=BCoord[ix][iy][iz][1]*cm;
-            double y2=BCoord[ix][iy+1][iz][1]*cm;
-            double z1=BCoord[ix][iy][iz][2]*cm;
-            double z2=BCoord[ix][iy][iz+1][2]*cm;
-
-
-            double Bx_y1z1 = Btxt[ix][iy][iz][0] + ((Btxt[ix+1][iy][iz][0]-Btxt[ix][iy][iz][0])/(x2-x1))*(x_loc - x1);
-//            cout<<"Bx_y1z1="<<Bx_y1z1<<endl;
-            double Bx_y2z1 = Btxt[ix][iy+1][iz][0] + ((Btxt[ix+1][iy+1][iz][0]-Btxt[ix][iy+1][iz][0])/(x2-x1))*(x_loc - x1);
-//            cout<<"Bx_y2z1="<<Bx_y2z1<<endl;
-            double Bx_z1   = Bx_y1z1 + (y_loc-y1)*(Bx_y2z1-Bx_y1z1)/(y2-y1);
-//            cout<<"Bx_z1="<<Bx_z1<<endl;
-
-            double Bx_y1z2 = Btxt[ix][iy][iz+1][0] + ((Btxt[ix+1][iy][iz+1][0]-Btxt[ix][iy][iz+1][0])/(x2-x1))*(x_loc - x1);
-//            cout<<"Bx_y1z2="<<Bx_y1z2<<endl;
-            double Bx_y2z2 = Btxt[ix][iy+1][iz+1][0] + ((Btxt[ix+1][iy+1][iz+1][0]-Btxt[ix][iy+1][iz+1][0])/(x2-x1))*(x_loc - x1);
-//            cout<<"Bx_y2z2="<<Bx_y2z2<<endl;
-            double Bx_z2   = Bx_y1z2 + (y_loc-y1)*(Bx_y2z2-Bx_y1z2)/(y2-y1);
-//            cout<<"Bx_z2="<<Bx_z2<<endl;
-
-            double Bx_z = Bx_z1 + (z_loc - z1)*(Bx_z2-Bx_z1)/(z2-z1);
-//            cout<<"Bx_z="<<Bx_z<<endl;
-
-
-
-//             cout<<"coord x  "<<x_q1[i111]<<"     "<<x_q1[i121]<<"      "<<x_q1[i211]<<"      "<<x_q1[i221]<<endl;
-//             cout<<"coord y  "<<y_q1[i111]<<"     "<<y_q1[i121]<<"      "<<y_q1[i211]<<"      "<<y_q1[i221]<<endl;
-//             cout<<"field   "<<Bxq1[i111]<<"     "<<Bxq1[i121]<<"      "<<Bxq1[i211]<<"      "<<Bxq1[i221]<<endl;
-//             cout<<" temp 1 "<<Bx_y1z1<<"        "<<Bx_y2z1<<"    "<<(xn/cm - x_q1[i111])<<endl;
-//             cout<<"field Bx= "<<Bx_z1<<endl;
-
-
-
-            double By_y1z1 = Btxt[ix][iy][iz][1] + ((Btxt[ix+1][iy][iz][1]-Btxt[ix][iy][iz][1])/(x2-x1))*(x_loc - x1);
-            double By_y2z1 = Btxt[ix][iy+1][iz][1] + ((Btxt[ix+1][iy+1][iz][1]-Btxt[ix][iy+1][iz][1])/(x2-x1))*(x_loc - x1);
-            double By_z1   = By_y1z1 + (y_loc-y1)*(By_y2z1-By_y1z1)/(y2-y1);
-
-            double By_y1z2 = Btxt[ix][iy][iz+1][1] + ((Btxt[ix+1][iy][iz+1][1]-Btxt[ix][iy][iz+1][1])/(x2-x1))*(x_loc - x1);
-            double By_y2z2 = Btxt[ix][iy+1][iz+1][1] + ((Btxt[ix+1][iy+1][iz+1][1]-Btxt[ix][iy+1][iz+1][1])/(x2-x1))*(x_loc - x1);
-            double By_z2   = By_y1z2 + (y_loc-y1)*(By_y2z2-By_y1z2)/(y2-y1);
-
-            double By_z = By_z1 + (z_loc - z1)*(By_z2-By_z1)/(z2-z1);
-
-
-
-            double Bz_y1z1 = Btxt[ix][iy][iz][2] + ((Btxt[ix+1][iy][iz][2]-Btxt[ix][iy][iz][2])/(x2-x1))*(x_loc - x1);
-            double Bz_y2z1 = Btxt[ix][iy+1][iz][2] + ((Btxt[ix+1][iy+1][iz][2]-Btxt[ix][iy+1][iz][2])/(x2-x1))*(x_loc - x1);
-            double Bz_z1   = Bz_y1z1 + (y_loc-y1)*(Bz_y2z1-Bz_y1z1)/(y2-y1);
-
-            double Bz_y1z2 = Btxt[ix][iy][iz+1][2] + ((Btxt[ix+1][iy][iz+1][2]-Btxt[ix][iy][iz+1][2])/(x2-x1))*(x_loc - x1);
-            double Bz_y2z2 = Btxt[ix][iy+1][iz+1][2] + ((Btxt[ix+1][iy+1][iz+1][2]-Btxt[ix][iy+1][iz+1][2])/(x2-x1))*(x_loc - x1);
-            double Bz_z2   = Bz_y1z2 + (y_loc-y1)*(Bz_y2z2-Bz_y1z2)/(y2-y1);
-
-            double Bz_z = Bz_z1 + (z_loc - z1)*(Bz_z2-Bz_z1)/(z2-z1);
-
-	    //-------------------------------------------------------------
-	    // DJH Mod
-	    //-------------------------------------------------------------
-
-            fB[0]=Bx_z/10000.;//*tesla;
-            fB[1]=By_z/10000.;//*tesla;
-            fB[2]=Bz_z/10000.;//*tesla;
-            if (fPos[0] < 0 ) {fB[0]*= -1.;};
-            if (fPos[1] < 0 ) {fB[0]*= -1.; fB[2]*= -1.;};
-	    
-	}
+      double Bx_z = Bx_z1 + (z_loc - z1)*(Bx_z2-Bx_z1)/(z2-z1);
+      
+      double By_y1z1 = Btxt[ix][iy][iz][1] + ((Btxt[ix+1][iy][iz][1]-Btxt[ix][iy][iz][1])/(x2-x1))*(x_loc - x1);
+      double By_y2z1 = Btxt[ix][iy+1][iz][1] + ((Btxt[ix+1][iy+1][iz][1]-Btxt[ix][iy+1][iz][1])/(x2-x1))*(x_loc - x1);
+      double By_z1   = By_y1z1 + (y_loc-y1)*(By_y2z1-By_y1z1)/(y2-y1);
+      
+      double By_y1z2 = Btxt[ix][iy][iz+1][1] + ((Btxt[ix+1][iy][iz+1][1]-Btxt[ix][iy][iz+1][1])/(x2-x1))*(x_loc - x1);
+      double By_y2z2 = Btxt[ix][iy+1][iz+1][1] + ((Btxt[ix+1][iy+1][iz+1][1]-Btxt[ix][iy+1][iz+1][1])/(x2-x1))*(x_loc - x1);
+      double By_z2   = By_y1z2 + (y_loc-y1)*(By_y2z2-By_y1z2)/(y2-y1);
+      
+      double By_z = By_z1 + (z_loc - z1)*(By_z2-By_z1)/(z2-z1);
+      
+      double Bz_y1z1 = Btxt[ix][iy][iz][2] + ((Btxt[ix+1][iy][iz][2]-Btxt[ix][iy][iz][2])/(x2-x1))*(x_loc - x1);
+      double Bz_y2z1 = Btxt[ix][iy+1][iz][2] + ((Btxt[ix+1][iy+1][iz][2]-Btxt[ix][iy+1][iz][2])/(x2-x1))*(x_loc - x1);
+      double Bz_z1   = Bz_y1z1 + (y_loc-y1)*(Bz_y2z1-Bz_y1z1)/(y2-y1);
+      
+      double Bz_y1z2 = Btxt[ix][iy][iz+1][2] + ((Btxt[ix+1][iy][iz+1][2]-Btxt[ix][iy][iz+1][2])/(x2-x1))*(x_loc - x1);
+      double Bz_y2z2 = Btxt[ix][iy+1][iz+1][2] + ((Btxt[ix+1][iy+1][iz+1][2]-Btxt[ix][iy+1][iz+1][2])/(x2-x1))*(x_loc - x1);
+      double Bz_z2   = Bz_y1z2 + (y_loc-y1)*(Bz_y2z2-Bz_y1z2)/(y2-y1);
+      
+      double Bz_z = Bz_z1 + (z_loc - z1)*(Bz_z2-Bz_z1)/(z2-z1);
+      
+      fB[0]=Bx_z/10000.;//*tesla;
+      fB[1]=By_z/10000.;//*tesla;
+      fB[2]=Bz_z/10000.;//*tesla;
+      if (fPos[0] < 0 ) {fB[0]*= -1.;};
+      if (fPos[1] < 0 ) {fB[0]*= -1.; fB[2]*= -1.;};
+      
+    }
 
 }

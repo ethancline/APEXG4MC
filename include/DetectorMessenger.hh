@@ -8,12 +8,9 @@
 
 class DetectorConstruction;
 class G4UIdirectory;
-class G4UIcmdWithADoubleAndUnit;
-class G4UIcmdWith3VectorAndUnit;
-class G4UIcmdWithAnInteger;
 class G4UIcommand;
-class G4UIcmdWithABool;
 class G4UIcmdWithADouble;
+class G4UIcmdWithAString;
 
 //---------------------------------------------------------------------------
 
@@ -29,8 +26,12 @@ private:
   DetectorConstruction*        fDetector;
   G4UIdirectory*               fDetectorDir;
 
-  G4UIcmdWithADouble*          fTargetLengthCmd;
   G4UIcmdWithADouble*          fHRSAngleCmd;
+  G4UIcmdWithADouble*          fHRSMomCmd;
+  G4UIcmdWithADouble*          fDistTPCmd;
+  G4UIcmdWithADouble*          fDistPQ1Cmd;
+  G4UIcmdWithADouble*          fSepScaleCmd;
+  G4UIcmdWithAString*          fFieldMapCmd;  
 
   G4UIcommand*                 fUpdateCmd;
 };

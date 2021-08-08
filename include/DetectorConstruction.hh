@@ -4,7 +4,6 @@
 #include "G4VUserDetectorConstruction.hh"
 #include "G4NistManager.hh"
 #include "DetectorMessenger.hh"
-#include "BField_Septum_New.hh"
 
 //---------------------------------------------------------------------------
 
@@ -24,21 +23,23 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 
   void UpdateGeometry();
 
-  inline G4VPhysicalVolume* GetExpHall()    { return fExpHall;     };
-  inline G4VPhysicalVolume* GetDetVol(G4int i)     { return fDetVol[i]; };
-  inline G4VPhysicalVolume* GetSurfVol()    { return fSurfVol;  };
-  inline FluxSD*            GetFluxSD()     { return fFluxSD;    };
-  inline G4int              GetNoSD()       { return fNSD;    };
+  inline G4VPhysicalVolume* GetExpHall()       { return fExpHall;   };
+  inline G4VPhysicalVolume* GetDetVol(G4int i) { return fDetVol[i]; };
+  inline G4VPhysicalVolume* GetSurfVol()       { return fSurfVol;   };
+  inline FluxSD*            GetFluxSD()        { return fFluxSD;    };
+  inline G4int              GetNoSD()          { return fNSD;       };
 
-  void SetTargetLength    ( G4double l    ) { fTarLength = l;    }
-  void SetHRSAngle        ( G4double a    ) { fHRSAngle  = a;    }
+  void SetHRSAngle      ( G4double a  ) { fHRSAngle     = a;  }
+  void SetHRSMomentum   ( G4double p  ) { fHRSMomentum  = p;  }
+  void SetDistTarPivot  ( G4double tp ) { fDistTarPivot = tp; }
+  void SetDistPivotQ1   ( G4double pq ) { fDistPivotQ1  = pq; }
+  void SetSeptumScale   ( G4double ss ) { fScaleSeptum  = ss; }
+  void SetSeptFieldMap  ( G4String mf ) { fFieldMapFile = mf; }
 
   private:
 
   G4NistManager*     fNistManager;
   DetectorMessenger* fDetMessenger;
-
-  BField_Septum_New* fSeptumField;
 
   static const G4int fNSD = 2;
 
@@ -49,9 +50,13 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   FluxSD*            fFluxSD;
   EnergyDepositSD*   fEdepSD;
 
-  G4double           fTarLength;
   G4double           fHRSAngle;
-
+  G4double           fDistTarPivot;
+  G4double           fDistPivotQ1;
+  G4double           fHRSMomentum;
+  G4double           fScaleSeptum;
+  G4String           fFieldMapFile;
+  
 };
 #endif
 
