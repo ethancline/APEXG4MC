@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <iostream>
 #include "globals.hh"
+#include "CLHEP/Random/Random.h"
 
 #include "G4RunManager.hh"
 #include "G4UImanager.hh"
@@ -20,7 +21,20 @@
 
 int main(int argc, char** argv)
 {
-//detect interactive mode (if no arguments) and define UI session
+  CLHEP::HepRandom::createInstance();
+
+  unsigned int seed = time(0) + (int) getpid();
+  unsigned int devrandseed = 0;
+  FILE *fdrand = fopen("/dev/urandom", "r");
+  if( fdrand ){
+    fread(&devrandseed, sizeof(int), 1, fdrand);
+    seed += devrandseed;
+    fclose(fdrand);
+  }
+
+  CLHEP::HepRandom::setTheSeed(seed);
+  
+  //detect interactive mode (if no arguments) and define UI session
   G4UIExecutive* ui = nullptr;
   if (argc == 1) ui = new G4UIExecutive(argc,argv);
 
