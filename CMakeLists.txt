@@ -69,3 +69,6 @@ else()
   message("Downloading Septum field map...")
   file(DOWNLOAD http://nuclear.gla.ac.uk/~david/Septa-JB_map.table ${CMAKE_CURRENT_BINARY_DIR}/Septa-JB_map.table SHOW_PROGRESS)
 endif()
+#----------------------------------------------------------------------------
+ADD_CUSTOM_TARGET(link_target ALL
+                  COMMAND ${CMAKE_COMMAND} -E create_symlink ../macros ./macros)

@@ -67,7 +67,7 @@ DetectorConstruction::DetectorConstruction()
   fFieldMapFile = "Septa-JB_map.table";
     
   G4UImanager* UI = G4UImanager::GetUIpointer();
-  G4String command = "/control/execute ../macros/DetectorSetup.mac";
+  G4String command = "/control/execute macros/DetectorSetup.mac";
   UI->ApplyCommand(command);
 
 }
