@@ -13,6 +13,9 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 
+#ignore build dir
+build/
+
 #ignore root files
 *.root
 

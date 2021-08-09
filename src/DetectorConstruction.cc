@@ -1169,7 +1169,166 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
   
   //------------------------------End of Septum----------------------------------------
+ 
+  //--------------------------------------------------------------------------- 
+  // Create Sieve 
+  //---------------------------------------------------------------------------
   
+  G4double target_width=0.200*mm;
+  G4double target_x=25.*cm;
+  G4double target_y=25.*cm;
+
+  G4double Rad_tail_foil_postn = 0 *cm;//zlength; //+  200. *cm ; //THIS NEEDS TO BE CLARIFIED
+  //gConfig->GetParameter("Rad_tail_foil_postn",Rad_tail_foil_postn);
+
+  G4VSolid* targ1=new G4Box("rad_tail_solid",target_x/2.,target_y/2.,target_width/2.);
+  G4LogicalVolume* RadTailLogical = new G4LogicalVolume(targ1,fNistManager->FindOrBuildMaterial("G4_Al"),"RadTailLogical",0,0,LarmStepLimits);
+  RadTailLogical->SetVisAttributes((G4Colour(0.998, 0.008, 0.000)));  
+
+  G4VSolid* tail_det = new G4Box("Targ trans",target_x/2.,target_y/2.,0.001*target_width/2.);
+  G4LogicalVolume* RadTailDetLogical = new G4LogicalVolume(tail_det,fNistManager->FindOrBuildMaterial("G4_vacuum"),"RadTailDetLogical",0,0,LarmStepLimits);
+  RadTailDetLogical->SetVisAttributes((G4Colour(0.00998, 0.99008, 0.000)));
+
+
+  new G4PVPlacement(0,G4ThreeVector(0,0, Rad_tail_foil_postn*cm),RadTailLogical ,"RadTail",expHall_log,0,0,0);
+  new G4PVPlacement(0,G4ThreeVector(0,0, (Rad_tail_foil_postn+1.)*cm),       RadTailDetLogical ,"RadTailDet",expHall_log,0,0,0);
+  //cout<<"Rad_tail_foil_position="<<Rad_tail_foil_postn<<endl;
+  
+ 
+  //sieve geometry is 8.38 x 8.38 x 1 inches, gap distance is 0.492 inch (horizontal) and 0.984 inch (vertical), gap diameter is 0.157e-3 inch, two gaps with 0.236e-3 inch
+  //double inch=2.54*cm;
+
+  double pSieveSlitX=3.25*inch; //
+  double pSieveSlitY=4.25*inch; //
+  double sieve_thickness=0.5;
+  double pSieveSlitZ=sieve_thickness*inch;
+  //cout<<"sieve thickness is "<<sieve_thickness<<" inches"<<endl;
+
+  double sieve_distance = 31.23*inch;
+
+  double sieve_pos_z=-105.30001365*cm+(sieve_distance + pSieveSlitZ/2.)*cos(5.81*deg);
+  double sieve_pos_x=(sieve_distance + pSieveSlitZ/2.)*sin(5.81*deg);
+
+
+  double startphi=0.0*deg;
+  double deltaphi=360.0*deg;
+
+  //         double pSieveSlitHoleR=2.*mm;           //radius of small hole 0.055/2 inch
+  //         double pSieveSlitLargeHoleR=3.*mm;      //radius of large hole 0.106/2 inch
+  double pSieveSlitHoleR=0.5*0.055*inch;           //radius of small hole 0.055/2 inch
+  double pSieveSlitLargeHoleR=0.5*0.106*inch;      //radius of large hole 0.106/2 inch
+  double pSieveSlitMediumHoleR=1.*0.5*0.075*inch;           //radius of small hole 0.055/2 inch
+  double pSieveSlitHoldL=pSieveSlitZ+0.1*mm;  //need to make it longer to avoid round off in the subtraction
+
+  //the whole position relative to the slit center 
+  double pSieveSlitHolePosH[15]={0.295, 0.485, 0.675, 0.865, 1.055, 1.245, 1.435, 1.625, 1.815, 2.005, 2.195, 2.385, 2.575, 2.765, 2.955};
+  double pSieveSlitHolePosV[9] = {0.285, 0.745, 1.205, 1.665, 2.125, 2.585, 3.045, 3.505, 3.965};
+  for(int ii=0;ii<15;ii++)
+    {
+      pSieveSlitHolePosH[ii] = (pSieveSlitHolePosH[ii]-1.625)*inch;
+    }
+  for(int ii=0;ii<9;ii++)
+    {
+      pSieveSlitHolePosV[ii] = (pSieveSlitHolePosV[ii]-2.125)*inch;
+    }
+  //now start to build box then subtract 63 holes 
+  G4VSolid* sieveSlitWholeSolid=new G4Box("sieveSlitWholeBox",pSieveSlitX/2.0,
+					  pSieveSlitY/2.0,pSieveSlitZ/2.0);
+  startphi=0.0*deg;deltaphi=360.0*deg;
+
+  G4VSolid* sieveSlitHoleSolid=new G4Tubs("sieveSlitHoleTubs",0,pSieveSlitHoleR,
+					  pSieveSlitHoldL/2.0,startphi,deltaphi); 
+
+  G4VSolid* sieveSlitLargeHoleSolid=new G4Tubs("sieveSlitLargeHoleTubs",0,
+					       pSieveSlitLargeHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
+
+  G4VSolid* sieveSlitMediumHoleSolid=new G4Tubs("sieveSlitMediumHoleTubs",0,
+						pSieveSlitMediumHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
+
+  G4SubtractionSolid* sieveSlitSolid=(G4SubtractionSolid*)sieveSlitWholeSolid;
+  char strName[100];
+  for(int ih=0;ih<15;ih++)
+    {
+      for(int iv=0;iv<9;iv++)
+	{
+	  sprintf(strName,"sieveSlitHole_H%d_V%d",ih,iv);
+	  if((ih==7 && iv==4) || (ih==3 && iv==2)) 
+	    {
+	      //now dig large holes in the block
+	      sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+						    sieveSlitLargeHoleSolid,0,
+						    G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv],0));
+	    }
+	  else
+	    {
+	      //now dig small holes in the block
+	      sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+						    sieveSlitHoleSolid,0,
+						    G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv], 0));
+	    }
+	  if ((iv>=7) || (iv<2))
+	    {
+	      sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+						    sieveSlitMediumHoleSolid,0,
+						    G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv], 0.3*inch));
+	    }
+	}
+    }
+
+
+  for(int ih=0;ih<14-2;ih++)
+    {
+      for(int iv=0;iv<8;iv++)
+	{
+	  sprintf(strName,"sieveSlitHole_H%d_V%d",ih,iv);
+	  if ( !( ( ih == 6 ) && (iv>0) && (iv<7) ) )
+	    {
+	      //now dig small holes in the block
+	      sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+						    sieveSlitHoleSolid,0,
+						    G4ThreeVector(0.5*(pSieveSlitHolePosH[ih]+pSieveSlitHolePosH[ih+1]), 0.5*(pSieveSlitHolePosV[iv]+pSieveSlitHolePosV[iv+1]), 0));
+	    }
+	  if ((iv==7) || (iv==0))
+	    {
+	      sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+						    sieveSlitMediumHoleSolid,0,
+						    G4ThreeVector(0.5*(pSieveSlitHolePosH[ih]+pSieveSlitHolePosH[ih+1]), 0.5*(pSieveSlitHolePosV[iv]+pSieveSlitHolePosV[iv+1]), 0.3*inch));
+	    }
+	}
+    }
+
+  sieveSlitSolid->SetName("sieveSlitSolid");
+
+  G4LogicalVolume* sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
+							  fNistManager->FindOrBuildMaterial("G4_Al"),"sieveSlitLogical",0,0,LarmStepLimits);
+  //sieveSlitLogical->SetVisAttributes(IronVisAtt);
+
+  //new G4PVPlacement(pRotX90deg,G4ThreeVector(0,-sieve_pos_z,0),
+  //sieveSlitLogical,"SievePhys",LHRSContainerLogical,0,0,0);
+
+
+  
+
+  G4RotationMatrix *R_RotY90deg_sieve_slit=new G4RotationMatrix();
+  R_RotY90deg_sieve_slit->rotateY(-5.*deg);
+  new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieve_pos_x, 0, sieve_pos_z),
+		    sieveSlitLogical,"RSievePhys", expHall_log, 0, 0, 0);
+
+  G4RotationMatrix *L_RotY90deg_sieve_slit=new G4RotationMatrix();
+  L_RotY90deg_sieve_slit->rotateY(5.*deg);
+  new G4PVPlacement(L_RotY90deg_sieve_slit,G4ThreeVector(-sieve_pos_x, 0, sieve_pos_z),
+		    sieveSlitLogical,"LSievePhys", expHall_log, 0, 0, 0);
+  
+
+  // G4VSolid* sieveBackPlaneSolid=new G4Box("sieveBackPlaneSolid", 0.75*pSieveSlitX, 0.75*pSieveSlitY,0.001*mm);
+  //G4LogicalVolume* sieveSlitBackLogical = new G4LogicalVolume(sieveBackPlaneSolid, fNistManager->FindOrBuildMaterial("G4_vacuum"), "sieveBackPlaneLogical",0,0,LarmStepLimits);
+  // new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieve_pos_x, 0, sieve_pos_z+1.5*cm), sieveSlitBackLogical,"RSvSlBack", expHall_log, 0, 0, 0);
+  //new G4PVPlacement(L_RotY90deg_sieve_slit,G4ThreeVector(-sieve_pos_x, 0, sieve_pos_z+1.5*cm), sieveSlitBackLogical,"LSvSlBack", expHall_log, 0, 0, 0);
+  //sieveSlitBackLogical->SetVisAttributes(G4VisAttributes::Invisible);
+
+  
+
+ 
   //--------------------------------------------------------------------------- 
   // Create Q1 SOS (from original APEX G4)
   //--------------------------------------------------------------------------- 
