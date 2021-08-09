@@ -51,4 +51,4 @@
 /gps/pos/type Point
 /gps/pos/centre 0. 0. -105.289 cm
 
-/run/beamOn 1
+#/run/beamOn 1

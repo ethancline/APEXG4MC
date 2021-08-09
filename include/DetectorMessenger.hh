@@ -11,6 +11,7 @@ class G4UIdirectory;
 class G4UIcommand;
 class G4UIcmdWithADouble;
 class G4UIcmdWithAString;
+class G4UIcmdWithABool;
 
 //---------------------------------------------------------------------------
 
@@ -32,7 +33,9 @@ private:
   G4UIcmdWithADouble*          fDistPQ1Cmd;
   G4UIcmdWithADouble*          fSepScaleCmd;
   G4UIcmdWithAString*          fFieldMapCmd;  
-
+  G4UIcmdWithABool*            fSieveOnCmd;
+  G4UIcmdWithADouble*          fSieveAngleCmd;
+  
   G4UIcommand*                 fUpdateCmd;
 };
 

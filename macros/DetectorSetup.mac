@@ -1,6 +1,8 @@
 /APEXG4MC/detector/HRSAngle 12.5
-/APEXG4MC/detector/HRSMomentum 1.1
+/APEXG4MC/detector/HRSMomentum 1.063
 /APEXG4MC/detector/DistTarPivot 105.29
 /APEXG4MC/detector/DistPivotQ1 159.03
-/APEXG4MC/detector/SeptumFieldScale 1.0
+/APEXG4MC/detector/SeptumFieldScale 1.05
 /APEXG4MC/detector/SeptumFieldMap Septa-JB_map.table
+/APEXG4MC/detector/SieveOn false
+/APEXG4MC/detector/SieveAngle 5
