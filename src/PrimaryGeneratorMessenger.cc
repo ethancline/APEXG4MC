@@ -17,12 +17,12 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger( PrimaryGeneratorAction* Gu
   fGunDir->SetGuidance("PrimaryGenerator control");
 
   fSetInputCmd = new G4UIcmdWithAString("/APEXG4MC/generator/InputFile",this);
-  fSetInputCmd->SetGuidance("Set the file with the input ROOT ntuple");
+  fSetInputCmd->SetGuidance("Set the full name and path of the input ROOT tree.");
   fSetInputCmd->SetParameterName("inputfile",false);
   fSetInputCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   fSetModeCmd = new G4UIcmdWithAnInteger("/APEXG4MC/generator/Mode",this);
-  fSetModeCmd->SetGuidance("Set the mode of the generator, command line, GPS or ROOT");
+  fSetModeCmd->SetGuidance("Set the mode of the generator (0 for GPS or 1 for ROOT tree).");
   fSetModeCmd->SetParameterName("Mode",false);
   fSetModeCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 

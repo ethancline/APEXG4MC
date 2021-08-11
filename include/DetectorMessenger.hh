@@ -35,6 +35,7 @@ private:
   G4UIcmdWithAString*          fFieldMapCmd;  
   G4UIcmdWithABool*            fSieveOnCmd;
   G4UIcmdWithADouble*          fSieveAngleCmd;
+  G4UIcmdWithAString*          fTargetCmd;
   
   G4UIcommand*                 fUpdateCmd;
 };
