@@ -53,5 +53,4 @@
   /APEXG4MC/generator/Mode 0
   Set the mode of the generator (0 for GPS or 1 for ROOT tree).
 
-# Generator options (in main control macro)
 
