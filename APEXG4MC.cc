@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <iostream>
+#include "unistd.h"
 #include "globals.hh"
 #include "CLHEP/Random/Random.h"
 
