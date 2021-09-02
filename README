@@ -5,3 +5,53 @@
 > cd build
 > cmake ../ (or cmake3 ../)
 > make -jX (X specifies number of cores to use)
+
+# Detector options (in macros/DetectorSetup.mac)
+  /APEXG4MC/detector/HRSAngle 12.5
+  Set the HRS angle in degrees.
+
+  /APEXG4MC/detector/HRSMomentum 1.063
+  Set the HRS central momentum in GeV/c.
+  
+  /APEXG4MC/detector/DistTarPivot 105.29
+  Set the distance between centre of scattering chamber and hall pivot in cm.
+
+  /APEXG4MC/detector/DistPivotQ1 159.03
+  Set the distance between hall pivot and Q1 entrance in cm.
+
+  /APEXG4MC/detector/SeptumFieldScale 1.05
+  Set the septum field scale (from nominal central momentum).
+
+  /APEXG4MC/detector/SeptumFieldMap Septa-JB_map.table
+  Set the full name and path of the septum field map.
+
+  /APEXG4MC/detector/SieveOn false
+  Set the sieve slit in or out (true or false).
+
+  /APEXG4MC/detector/SieveAngle 5.0
+  Set the sieve slit angle in degrees.
+
+  /APEXG4MC/detector/Target ProdW
+  Set the target type (ProdW, ProdC, Optics1, Optics2, Optics3, VWires or HWires).
+
+# PhysicsList options (in main control macro before /run/initialize)
+  /APEXG4MC/physics/setCuts 0.1 mm
+  Set cut for all particle types.
+
+  /APEXG4MC/physics/addPhysics QGSP_BIC_EMY
+  Add physics list (standard_opt3, LowE_Livermore, LowE_Penelope, QGSP_BIC_EMY, QGSP_BIS_HP,
+  QGSP_BERT_HP, FTFP_BERT_HP)
+
+# Analysis options (in main control macro)
+  /APEXG4MC/analysis/setOutputFile
+  Set the full name and path of the output file.
+
+# Generator options (in main control macro)
+  /APEXG4MC/generator/Mode 0
+  Set the mode of the generator (0 for GPS or 1 for ROOT tree).
+
+  /APEXG4MC/generator/InputFile
+  Set the full name and path of the input ROOT tree (if Mode = 1).
+
+
+

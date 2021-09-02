@@ -35,8 +35,9 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   void SetDistPivotQ1   ( G4double pq ) { fDistPivotQ1  = pq; }
   void SetSeptumScale   ( G4double ss ) { fScaleSeptum  = ss; }
   void SetSeptFieldMap  ( G4String mf ) { fFieldMapFile = mf; }
-  void SetSieveOn       ( G4bool o    ) { fSieveOn      = o; }
+  void SetSieveOn       ( G4bool o    ) { fSieveOn      = o;  }
   void SetSieveAngle    ( G4double sa ) { fSieveAngle   = sa; }
+  void SetTarget        ( G4String t  ) { fTarget       = t;  }
   
   private:
 
@@ -60,6 +61,11 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   G4String           fFieldMapFile;
   G4bool             fSieveOn;
   G4double           fSieveAngle;
+  G4String           fTarget;
+
+  G4int              fTargetType;
+  enum Targ_t { kProdW, kProdC, kOptics1, kOptics2, kOptics3, kVWires, kHWires };
+
 };
 #endif
 

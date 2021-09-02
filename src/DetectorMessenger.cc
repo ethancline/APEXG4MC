@@ -39,6 +39,9 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Detect)
   fSieveAngleCmd  = new G4UIcmdWithADouble("/APEXG4MC/detector/SieveAngle",this);
   fSieveAngleCmd->SetGuidance("Set the sieve slit angle in degrees.");
 
+  fTargetCmd  = new G4UIcmdWithAString("/APEXG4MC/detector/Target",this);
+  fTargetCmd->SetGuidance("Set the target type (ProdW, ProdC, Optics1, Optics2, Optics3, VWires or HWires)");
+
   fUpdateCmd          = new G4UIcommand("/APEXG4MC/detector/update",this);
   fUpdateCmd->SetGuidance("Update the detector geometry with changed values.");
   fUpdateCmd->SetGuidance("Must be run before beamOn if detector has been changed.");  
@@ -58,6 +61,7 @@ DetectorMessenger::~DetectorMessenger()
   delete fFieldMapCmd;
   delete fSieveOnCmd;
   delete fSieveAngleCmd;
+  delete fTargetCmd;
 
   delete fUpdateCmd;
 }
@@ -82,6 +86,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
     fDetector->SetSeptFieldMap(newValue.data());
   else if (command == fSieveOnCmd)
     fDetector->SetSieveOn(fSieveOnCmd->GetNewBoolValue(newValue));
+    else if(command == fTargetCmd)
+    fDetector->SetTarget(newValue.data());
   else if (command == fSieveAngleCmd)
     fDetector->SetSieveAngle(fSieveAngleCmd->GetNewDoubleValue(newValue));
 

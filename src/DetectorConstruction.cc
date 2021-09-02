@@ -55,6 +55,7 @@ DetectorConstruction::DetectorConstruction()
   fFieldMapFile = "Septa-JB_map.table"; // new septum geometry but not latest map
   fSieveOn      = false;
   fSieveAngle   = 5 *deg; // 5.81 degrees?
+  fTarget       = "ProdW";
   
   G4UImanager* UI = G4UImanager::GetUIpointer();
   G4String command = "/control/execute macros/DetectorSetup.mac";
@@ -114,7 +115,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 					   2.5 *m, 1.0 *m, 4.0 *m );
   
   G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,
-						     Beamline,
+						     Beamline,                    // DJH: default to vacuum for now
 						     "expHall_log", 0, 0, 0);
   
   fExpHall                     = new G4PVPlacement(0, G4ThreeVector(),
@@ -238,7 +239,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Scattering chamber volume (vacuum)
 
   G4Tubs* solidExitBeamPipeHole     = new G4Tubs("solidBackViewPipeHole", 
-						0.0, 150.0*mm, 7.903*inch, 0.0, 360.0*deg);
+						 0.0, 175.0*mm, 7.903*inch, 0.0, 360.0*deg);  // DJH: artificially increased radius for now
   
   G4Tubs* solidEntranceBeamPipeHole = new G4Tubs("solidEntranceBeamPipeHole",
 						 0.0, 1.0*inch, 5.375*inch, 0.0, 360.0*deg);
@@ -272,6 +273,185 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   logicScatChamber = new G4LogicalVolume(solidScatChamber, Beamline, "ScatChamber_log");
   new G4PVPlacement(rotSC, *SCPlacement, logicScatChamber, "ScatChamberPhys",
 		    expHall_log, false, ++nonSDcounter, ChkOverlaps);
+
+  //--------------------------------------------------------------------------- 
+  // Create APEX targets (from Silviu's CAD model -- need to add offsets, etc)
+  //--------------------------------------------------------------------------- 
+
+  G4int       ntargs;
+  G4double    targwidth, targthick;
+  G4Material* targMaterial;
+  G4double    targzpos[10] = { 0.0 };
+  G4double    targxpos[10] = { 0.0 };
+  G4double    targypos[10] = { 0.0 };
+  
+  if( fTarget.compareTo("ProdW") == 0 )
+    fTargetType = kProdW;
+  else if( fTarget.compareTo("ProdC") == 0 )
+    fTargetType = kProdC;
+  else if( fTarget.compareTo("Optics1") == 0 )
+    fTargetType = kOptics1;
+  else if( fTarget.compareTo("Optics2") == 0 )
+    fTargetType = kOptics2;
+  else if( fTarget.compareTo("Optics3") == 0 )
+    fTargetType = kOptics3;
+  else if( fTarget.compareTo("VWires") == 0 )
+    fTargetType = kVWires;
+  else if( fTarget.compareTo("HWires") == 0 )
+    fTargetType = kHWires;
+  else {
+    cout << "Unknown target type " << fTarget << " setting to W production" << endl;
+    fTargetType = kProdW;
+  }
+  
+  switch(fTargetType){
+  case kProdW:
+    ntargs       = 10;
+    targwidth    = 2.5*mm;
+    targthick    = 0.01*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    targzpos[0]  = -247.4 *mm;
+    targzpos[1]  = -192.4 *mm;
+    targzpos[2]  = -137.4 *mm;
+    targzpos[3]  = -82.4 *mm;
+    targzpos[4]  = -27.4 *mm;
+    targzpos[5]  = 27.6 *mm;
+    targzpos[6]  = 82.6 *mm;
+    targzpos[7]  = 137.6 *mm;
+    targzpos[8]  = 192.6 *mm;
+    targzpos[9]  = 247.6 *mm;
+    break;
+  case kProdC:
+    ntargs       = 10;
+    targwidth    = 2.5*mm;
+    targthick    = 0.125*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    targzpos[0]  = -247.4 *mm;
+    targzpos[1]  = -192.4 *mm;
+    targzpos[2]  = -137.4 *mm;
+    targzpos[3]  = -82.4 *mm;
+    targzpos[4]  = -27.4 *mm;
+    targzpos[5]  = 27.6 *mm;
+    targzpos[6]  = 82.6 *mm;
+    targzpos[7]  = 137.6 *mm;
+    targzpos[8]  = 192.6 *mm;
+    targzpos[9]  = 247.6 *mm;
+    break;
+  case kOptics1:
+    ntargs       = 4;
+    targwidth    = 5.0*mm;
+    targthick    = 0.2*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    targzpos[0]  = -300.0 *mm;
+    targzpos[1]  = -150.0 *mm;
+    targzpos[2]  = 75.0 *mm;
+    targzpos[3]  = 219.0 *mm;
+    break;
+  case kOptics2:
+    ntargs       = 4;
+    targwidth    = 5.0*mm;
+    targthick    = 0.2*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    targzpos[0]  = -300.0 *mm;
+    targzpos[1]  = -219.0 *mm;
+    targzpos[2]  = -150.0 *mm;
+    targzpos[3]  = -75.0 *mm;
+    targzpos[4]  = 75.0 *mm;
+    targzpos[5]  = 150.0 *mm;
+    targzpos[6]  = 219.0 *mm;
+    targzpos[7]  = 300.0 *mm;
+    break;
+  case kOptics3:
+    ntargs       = 4;
+    targwidth    = 5.0*mm;
+    targthick    = 0.2*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    targzpos[0]  = -219.0 *mm;
+    targzpos[1]  = -75.0 *mm;
+    targzpos[2]  = 150 *mm;
+    targzpos[3]  = 300 *mm;
+    break;
+  case kVWires:
+    ntargs       = 3;
+    targwidth    = 30.0*mm;
+    targthick    = 0.1*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    targzpos[0]  = -200.0 *mm;
+    targzpos[1]  = 0.0 *mm;
+    targzpos[2]  = 200. *mm;
+    targxpos[0]  = -2.5 *mm;
+    targxpos[1]  = 0.0 *mm;
+    targxpos[2]  = 2.5 *mm;
+    break;
+  case kHWires:
+    ntargs       = 4;
+    targwidth    = 30.0*mm;
+    targthick    = 0.1*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    targzpos[0]  = -250.0 *mm;
+    targzpos[1]  = -100.0 *mm;
+    targzpos[2]  = 100. *mm;
+    targzpos[3]  = 250. *mm;
+    targypos[0]  = 0.0 *mm;
+    targypos[1]  = 5.0 *mm;
+    targypos[2]  = 10. *mm;
+    targypos[3]  = 15. *mm;
+    break;
+  default: // kProdW
+    ntargs       = 10;
+    targwidth    = 2.5*mm;
+    targthick    = 0.01*mm;
+    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    targzpos[0]  = -247.4 *mm;
+    targzpos[1]  = -192.4 *mm;
+    targzpos[2]  = -137.4 *mm;
+    targzpos[3]  = -82.4 *mm;
+    targzpos[4]  = -27.4 *mm;
+    targzpos[5]  = 27.6 *mm;
+    targzpos[6]  = 82.6 *mm;
+    targzpos[7]  = 137.6 *mm;
+    targzpos[8]  = 192.6 *mm;
+    targzpos[9]  = 247.6 *mm;
+    break;
+  }
+
+  // Target mother volume
+  G4Box *TargMother_box = new G4Box("solidTarg", targwidth, targwidth, 350. *mm );
+  G4LogicalVolume *TargMother_log = new G4LogicalVolume( TargMother_box, Beamline, "TargMother_log" );
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateX(90.0*deg);  
+  new G4PVPlacement( rot_temp, G4ThreeVector( 0., 0., 0.), TargMother_log, "TargMother", logicScatChamber, false, ++nonSDcounter );
+
+  // Target solids
+  char solidname[100];
+  G4VSolid *Target_solid;
+  for( G4int itarg=0; itarg<ntargs; itarg++ ) {
+
+    sprintf(solidname, "Target_solid%d", itarg );
+    if( fTargetType == kVWires || fTargetType == kHWires )
+      Target_solid = new G4Tubs(G4String(solidname), 0., targthick/2., targwidth/2., 0.0, 360.0 *deg );
+    else
+      Target_solid = new G4Box(G4String(solidname), targwidth/2., targwidth/2., targthick/2. );
+    
+    G4String logname = solidname;
+    logname += "_log";
+    G4LogicalVolume *Target_log = new G4LogicalVolume( Target_solid, targMaterial, logname );
+
+    G4String physname = solidname;
+    physname += "_phys";
+    if( fTargetType == kVWires ) {
+      rot_temp = new G4RotationMatrix();
+      rot_temp->rotateX(90.0*deg);  
+      new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, ++nonSDcounter );
+    }
+    else if( fTargetType == kHWires ) {
+      rot_temp = new G4RotationMatrix();
+      rot_temp->rotateY(90.0*deg);  
+      new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, ++nonSDcounter );
+    }
+    else
+      new G4PVPlacement( 0, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, ++nonSDcounter );
+  }
 
   //--------------------------------------------------------------------------- 
   // Create Septum (from original APEX G4)
@@ -645,8 +825,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   double sieve_distance  = 31.23*inch;
 
-  double sieve_pos_z     = -fDistTarPivot*cm+(sieve_distance + pSieveSlitZ/2.)*cos(fSieveAngle*deg); // DJH Mod was 105.30001365 cm and 5.81 degrees
-  double sieve_pos_x     = (sieve_distance + pSieveSlitZ/2.)*sin(fSieveAngle*deg);                   // DJH Mod was 5.81 degrees
+  double sieve_pos_z     = -fDistTarPivot*cm+(sieve_distance + pSieveSlitZ/2.)*cos(fSieveAngle*deg); // DJH: was 105.30001365 cm and 5.81 degrees???
+  double sieve_pos_x     = (sieve_distance + pSieveSlitZ/2.)*sin(fSieveAngle*deg);                   // DJH: was 5.81 degrees???
 
   double startphi        = 0.0*deg;
   double deltaphi        = 360.0*deg;
@@ -681,7 +861,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VSolid* sieveSlitMediumHoleSolid = new G4Tubs("sieveSlitMediumHoleTubs",0,
 						  pSieveSlitMediumHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
 
-  // DJH Mod here: added else if because medium holes were overlapping small holes in original
+  // DJH: added else if because medium holes were overlapping small holes in original
   G4SubtractionSolid* sieveSlitSolid = (G4SubtractionSolid*)sieveSlitWholeSolid;
   char strName[100];
   for(int ih=0;ih<15;ih++) {
@@ -707,7 +887,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
       }
   }
 
-  // DJH Mod here: commented out for now -- not sure what this next block is doing ?????
+  // DJH: commented out for now -- not sure what this next block is doing ?????
   // for(int ih=0;ih<14-2;ih++)
   //   {
   //     for(int iv=0;iv<8;iv++)
@@ -804,6 +984,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Visualisation
   G4VisAttributes* blue    = new G4VisAttributes( G4Colour(0.0,0.0,1.0) );
   expHall_log->SetVisAttributes(G4VisAttributes::Invisible);
+  TargMother_log->SetVisAttributes(G4VisAttributes::Invisible);
   Q1_log->SetVisAttributes(blue);
 
   //---------------------------------------------------------------------------
