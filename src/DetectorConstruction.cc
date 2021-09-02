@@ -36,6 +36,8 @@
 #include "globals.hh"
 #include "G4TwoVector.hh"
 
+#include <fstream>
+
 using namespace CLHEP;
 using namespace std;
 
@@ -45,6 +47,8 @@ DetectorConstruction::DetectorConstruction()
 {
   fNistManager  = G4NistManager::Instance();
   fDetMessenger = new DetectorMessenger(this);
+
+  fNSD = 0;
 
   // Set detector parameters defaults
   fHRSAngle     = 12.5;
@@ -60,6 +64,7 @@ DetectorConstruction::DetectorConstruction()
   G4UImanager* UI = G4UImanager::GetUIpointer();
   G4String command = "/control/execute macros/DetectorSetup.mac";
   UI->ApplyCommand(command);
+  
 }
 
 //---------------------------------------------------------------------------
@@ -74,6 +79,8 @@ DetectorConstruction::~DetectorConstruction()
 G4VPhysicalVolume* DetectorConstruction::Construct()
 { 
 
+  ofstream outfile("DetectorIDTable.txt");
+
   G4GeometryManager::GetInstance()->OpenGeometry();
   G4PhysicalVolumeStore::GetInstance()->Clean();
   G4LogicalVolumeStore::GetInstance()->Clean();
@@ -83,7 +90,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4UserLimits* LarmStepLimits = new G4UserLimits(LarmStepLimit);
 
   G4int nonSDcounter = 100;       // detector copy id counters
-  G4int SDcounter    = 0;
 
   //---------------------------------------------------------------------------
   // Set up magnetic field
@@ -107,175 +113,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   Beamline->AddElement(N, 0.7);
   Beamline->AddElement(O, 0.3);
 
-  //---------------------------------------------------------------------------
-  // Create experimental hall -- default to vacuum for now
-  //---------------------------------------------------------------------------
-
-  G4Box* expHall_box           = new G4Box("expHall_box",
-					   2.5 *m, 1.0 *m, 4.0 *m );
-  
-  G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,
-						     Beamline,                    // DJH: default to vacuum for now
-						     "expHall_log", 0, 0, 0);
-  
-  fExpHall                     = new G4PVPlacement(0, G4ThreeVector(),
-						   expHall_log, "expHall", 0, false, nonSDcounter);
-
   //--------------------------------------------------------------------------- 
-  // Create upstream beamline (copy from "standard" (GMn) config in g4sbs)
-  //--------------------------------------------------------------------------- 
-
-  G4bool ChkOverlaps = false;
-  G4double inch      = 2.54*cm;
-  
-  double sc_entbeampipeflange_dist = 25.375*2.54*cm; // entrance pipe flange distance from hall center 
-  
-  G4double ent_len = 2*m; 
-  G4double ent_rin = 31.75*mm; 
-  G4double ent_rou = ent_rin+0.120*mm; 
-  
-  G4Tubs *ent_tube = new G4Tubs("ent_tube", ent_rin, ent_rou, ent_len/2, 0.*deg, 360.*deg ); 
-  G4Tubs *ent_vac  = new G4Tubs("ent_vac", 0.0, ent_rin, ent_len/2, 0.*deg, 360.*deg ); 
-  
-  G4LogicalVolume *entLog    = new G4LogicalVolume(ent_tube,
-						   fNistManager->FindOrBuildMaterial("G4_STAINLESS-STEEL"), "ent_log", 0, 0, 0); 
-  G4LogicalVolume *entvacLog = new G4LogicalVolume(ent_vac,
-						   Beamline, "entvac_log", 0, 0, 0); 
-  
-  new G4PVPlacement(0,G4ThreeVector(0.0, 0.0, -ent_len/2-sc_entbeampipeflange_dist-fDistTarPivot*cm),
-		    entLog, "ent_phys", expHall_log, false, ++nonSDcounter , ChkOverlaps); 
-  new G4PVPlacement(0,G4ThreeVector(0.0, 0.0, -ent_len/2-sc_entbeampipeflange_dist-fDistTarPivot*cm),
-		    entvacLog, "entvac_phys", expHall_log,false, ++nonSDcounter , ChkOverlaps); 
-
-  //---------------------------------------------------------------------------
-  // Create scattering chamber (copy from "standard" (GMn) config in g4sbs, just the tank and vacuum for now)
-  //---------------------------------------------------------------------------
-
-  G4LogicalVolume *logicScatChamberTank = 0;
-  G4LogicalVolume *logicScatChamber     = 0;
-
-  // Scattering chamber tank:
-  // basic volume:
-  G4double SCHeight        = 44.75*inch;
-  G4double SCRadius        = 20.0*inch;
-  G4double SCTankThickness = 2.5*inch;
-  G4double SCTankRadius    = SCRadius+SCTankThickness;
-  G4double SCTankHeight    = SCHeight;
-  G4double SCOffset        = 3.75*inch;
-  
-  G4Tubs* solidSCTank_0 = new G4Tubs("SCTank_0", SCRadius, SCTankRadius, 0.5*SCTankHeight, 0.0*deg, 360.0*deg);
-  
-  // exit flange:
-  G4double SCExitFlangePlateHLength = 22.5*sin(25.5*atan(1)/45.0)*inch;
-  G4double SCExitFlangePlateHeight  = 11.0*inch;
-  G4double SCExitFlangePlateThick   = 1.25*inch;
-  G4double SCExitFlangeHAngleApert  = atan(SCExitFlangePlateHLength/(SCTankRadius+SCExitFlangePlateThick));
-  G4double SCExitFlangeMaxRad       = SCExitFlangePlateHLength/sin(SCExitFlangeHAngleApert);
-  
-  G4Tubs* solidSCExitFlangetubs =  new G4Tubs("SCExFlange_tubs", SCRadius, SCExitFlangeMaxRad, 
-					      0.5*SCExitFlangePlateHeight, 0.0, 2.0*SCExitFlangeHAngleApert);
-  
-  G4RotationMatrix* rot_temp = new G4RotationMatrix();
-  rot_temp->rotateZ(180.0*deg+SCExitFlangeHAngleApert);
-  
-  G4UnionSolid* solidSCTank_0_exft =  new G4UnionSolid("solidSCTank_0_exft", solidSCTank_0, solidSCExitFlangetubs,
-						       rot_temp, G4ThreeVector(0,0,SCOffset));
-  
-  G4Box* ExitFlangeHeadCut = new G4Box("ExitFlangeHeadCut", 0.5*m, 0.5*m, 0.5*m); 
-    
-  G4SubtractionSolid* solidSCTank_0_exf = new G4SubtractionSolid("solidSCTank_0_exf", solidSCTank_0_exft, ExitFlangeHeadCut,
-								 0, G4ThreeVector(-SCTankRadius-0.5*m,0,0));
-  
-  // exit flange hole:
-  G4double SCExitFlangeHoleHeight    = 7.85*inch;
-  G4double SCExitFlangeHoleAngleApert = 38.25*deg;
-  
-  G4Tubs* solidSCExFH = new G4Tubs("SCExFH", SCRadius-1.0*cm, SCTankRadius+1.5*inch,
-				   0.5*SCExitFlangeHoleHeight, 0.0, SCExitFlangeHoleAngleApert);
-  
-  rot_temp = new G4RotationMatrix();
-  rot_temp->rotateZ(180.0*deg+SCExitFlangeHoleAngleApert*0.5);
-  
-  G4SubtractionSolid* solidSCTank_0_exfh = new G4SubtractionSolid("solidSCTank_0_exfh", solidSCTank_0_exf, solidSCExFH,
-								  rot_temp, G4ThreeVector(0,0,SCOffset));
-  
-  // windows holes: 
-  G4double SCWindowHeight      = 18.0*inch;
-  G4double SCWindowAngleApert  = 149.0*deg;
-  G4double SCWindowAngleOffset = 11.0*deg;
-  
-  G4Tubs* solidSCWindow = new G4Tubs("SCWindow", SCRadius-1.0*cm, SCTankRadius+1.0*cm,
-				     0.5*SCWindowHeight, 0.0, SCWindowAngleApert);
-  
-  rot_temp = new G4RotationMatrix();
-  rot_temp->rotateZ(90.0*deg+SCWindowAngleApert*0.5-SCWindowAngleOffset);
-  
-  G4SubtractionSolid* solidSCTank_0_wf = new G4SubtractionSolid("solidSCTank_0_wf", solidSCTank_0_exfh, solidSCWindow,
-								rot_temp, G4ThreeVector(0,0,SCOffset));
-  
-  rot_temp = new G4RotationMatrix();
-  rot_temp->rotateZ(-90.0*deg+SCWindowAngleApert*0.5+SCWindowAngleOffset);
-  
-  G4SubtractionSolid* solidSCTank_0_wb = new G4SubtractionSolid("solidSCTank_0_wb", solidSCTank_0_wf, solidSCWindow,
-								rot_temp, G4ThreeVector(0,0,SCOffset));
-
-  //---------------------------------------------------------------------------  
-  // Scattering chamber tank (aluminum)
-  
-  G4VSolid* solidScatChamberTank = solidSCTank_0_wb;
-  logicScatChamberTank =   new G4LogicalVolume(solidScatChamberTank,
-					       fNistManager->FindOrBuildMaterial("G4_Al"), "ScatChamberTank_log");
-  
-  G4RotationMatrix* rotSC = new G4RotationMatrix();
-  rotSC->rotateX(-90.0*deg);
-  
-  G4ThreeVector* SCPlacement = new G4ThreeVector(0,-fDistTarPivot*cm,-SCOffset);
-  SCPlacement->rotateX(90*deg);
-  
-  new G4PVPlacement(rotSC, *SCPlacement, logicScatChamberTank, "ScatChamberTankPhys", expHall_log, false, ++nonSDcounter, ChkOverlaps);
-
-  
-  //---------------------------------------------------------------------------  
-  // Scattering chamber volume (vacuum)
-
-  G4Tubs* solidExitBeamPipeHole     = new G4Tubs("solidBackViewPipeHole", 
-						 0.0, 175.0*mm, 7.903*inch, 0.0, 360.0*deg);  // DJH: artificially increased radius for now
-  
-  G4Tubs* solidEntranceBeamPipeHole = new G4Tubs("solidEntranceBeamPipeHole",
-						 0.0, 1.0*inch, 5.375*inch, 0.0, 360.0*deg);
-  
-  G4Tubs* solidScatChamber_0        = new G4Tubs("SC", 0.0, SCRadius, 0.5* SCHeight, 0.0*deg, 360.0*deg);
-  
-  G4Tubs* solidSCWindowVacuum       = new G4Tubs("SCWindowVacuumFront", SCRadius-1.0*cm, SCTankRadius,
-						 0.5*SCWindowHeight, 0.0, SCWindowAngleApert);
-  
-  rot_temp = new G4RotationMatrix();
-  rot_temp->rotateZ(90.0*deg+SCWindowAngleApert*0.5-SCWindowAngleOffset);
-  
-  G4UnionSolid* solidScatChamber_0_wbv = new G4UnionSolid("solidScatChamber_0_wbv", solidScatChamber_0, solidSCWindowVacuum,
-							  rot_temp, G4ThreeVector(0,0,SCOffset));
-  
-  rot_temp = new G4RotationMatrix();
-  rot_temp->rotateZ(-90.0*deg+SCWindowAngleApert*0.5+SCWindowAngleOffset);
-  
-  rot_temp = new G4RotationMatrix();
-  rot_temp->rotateX(90.0*deg);
-
-  G4UnionSolid* solidScatChamber_0_entbp = new G4UnionSolid("solidScatChamber_0_entbp", solidScatChamber_0_wbv,
-							     solidEntranceBeamPipeHole, 
-							     rot_temp, G4ThreeVector(0, -SCRadius, SCOffset));
-
-  G4UnionSolid* solidScatChamber_0_exbp  = new G4UnionSolid("solidScatChamber_0_exbp", solidScatChamber_0_entbp,
-							    solidExitBeamPipeHole, 
-							    rot_temp, G4ThreeVector(0, +SCRadius, SCOffset));
-  
-  G4VSolid* solidScatChamber = solidScatChamber_0_exbp;
-  logicScatChamber = new G4LogicalVolume(solidScatChamber, Beamline, "ScatChamber_log");
-  new G4PVPlacement(rotSC, *SCPlacement, logicScatChamber, "ScatChamberPhys",
-		    expHall_log, false, ++nonSDcounter, ChkOverlaps);
-
-  //--------------------------------------------------------------------------- 
-  // Create APEX targets (from Silviu's CAD model -- need to add offsets, etc)
+  // Define APEX targets (from Silviu's CAD model -- need to add offsets, etc)
   //--------------------------------------------------------------------------- 
 
   G4int       ntargs;
@@ -415,6 +254,178 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     break;
   }
 
+  //---------------------------------------------------------------------------
+  // Create experimental hall -- default to vacuum for now
+  //---------------------------------------------------------------------------
+
+  G4Box* expHall_box           = new G4Box("expHall_box",
+					   2.5 *m, 1.0 *m, 4.0 *m );
+  
+  G4LogicalVolume* expHall_log = new G4LogicalVolume(expHall_box,
+						     Beamline,                    // DJH: default to vacuum for now
+						     "expHall_log", 0, 0, 0);
+  
+  fExpHall                     = new G4PVPlacement(0, G4ThreeVector(),
+						   expHall_log, "expHall", 0, false, nonSDcounter);
+
+  //--------------------------------------------------------------------------- 
+  // Create upstream beamline (copy from "standard" (GMn) config in g4sbs)
+  //--------------------------------------------------------------------------- 
+
+  G4bool ChkOverlaps = false;
+  G4double inch      = 2.54*cm;
+  
+  double sc_entbeampipeflange_dist = 25.375*2.54*cm; // entrance pipe flange distance from hall center 
+  
+  G4double ent_len = 2*m; 
+  G4double ent_rin = 31.75*mm; 
+  G4double ent_rou = ent_rin+0.120*mm; 
+  
+  G4Tubs *ent_tube = new G4Tubs("ent_tube", ent_rin, ent_rou, ent_len/2, 0.*deg, 360.*deg ); 
+  G4Tubs *ent_vac  = new G4Tubs("ent_vac", 0.0, ent_rin, ent_len/2, 0.*deg, 360.*deg ); 
+  
+  G4LogicalVolume *entLog    = new G4LogicalVolume(ent_tube,
+						   fNistManager->FindOrBuildMaterial("G4_STAINLESS-STEEL"), "ent_log", 0, 0, 0); 
+  G4LogicalVolume *entvacLog = new G4LogicalVolume(ent_vac,
+						   Beamline, "entvac_log", 0, 0, 0); 
+  
+  new G4PVPlacement(0,G4ThreeVector(0.0, 0.0, -ent_len/2-sc_entbeampipeflange_dist-fDistTarPivot*cm),
+		    entLog, "ent_phys", expHall_log, false, ++nonSDcounter , ChkOverlaps); 
+  new G4PVPlacement(0,G4ThreeVector(0.0, 0.0, -ent_len/2-sc_entbeampipeflange_dist-fDistTarPivot*cm),
+		    entvacLog, "entvac_phys", expHall_log,false, ++nonSDcounter , ChkOverlaps); 
+
+  //---------------------------------------------------------------------------
+  // Create scattering chamber (copy from "standard" (GMn) config in g4sbs, just the tank and vacuum for now)
+  //---------------------------------------------------------------------------
+
+  G4LogicalVolume *logicScatChamberTank = 0;
+  G4LogicalVolume *logicScatChamber     = 0;
+
+  // Scattering chamber tank:
+  // basic volume:
+  G4double SCHeight        = 44.75*inch;
+  G4double SCRadius        = 20.0*inch;
+  G4double SCTankThickness = 2.5*inch;
+  G4double SCTankRadius    = SCRadius+SCTankThickness;
+  G4double SCTankHeight    = SCHeight;
+  G4double SCOffset        = 3.75*inch;
+  
+  G4Tubs* solidSCTank_0 = new G4Tubs("SCTank_0", SCRadius, SCTankRadius, 0.5*SCTankHeight, 0.0*deg, 360.0*deg);
+  
+  // exit flange:
+  G4double SCExitFlangePlateHLength = 22.5*sin(25.5*atan(1)/45.0)*inch;
+  G4double SCExitFlangePlateHeight  = 11.0*inch;
+  G4double SCExitFlangePlateThick   = 1.25*inch;
+  G4double SCExitFlangeHAngleApert  = atan(SCExitFlangePlateHLength/(SCTankRadius+SCExitFlangePlateThick));
+  G4double SCExitFlangeMaxRad       = SCExitFlangePlateHLength/sin(SCExitFlangeHAngleApert);
+  
+  G4Tubs* solidSCExitFlangetubs =  new G4Tubs("SCExFlange_tubs", SCRadius, SCExitFlangeMaxRad, 
+					      0.5*SCExitFlangePlateHeight, 0.0, 2.0*SCExitFlangeHAngleApert);
+  
+  G4RotationMatrix* rot_temp = new G4RotationMatrix();
+  rot_temp->rotateZ(180.0*deg+SCExitFlangeHAngleApert);
+  
+  G4UnionSolid* solidSCTank_0_exft =  new G4UnionSolid("solidSCTank_0_exft", solidSCTank_0, solidSCExitFlangetubs,
+						       rot_temp, G4ThreeVector(0,0,SCOffset));
+  
+  G4Box* ExitFlangeHeadCut = new G4Box("ExitFlangeHeadCut", 0.5*m, 0.5*m, 0.5*m); 
+    
+  G4SubtractionSolid* solidSCTank_0_exf = new G4SubtractionSolid("solidSCTank_0_exf", solidSCTank_0_exft, ExitFlangeHeadCut,
+								 0, G4ThreeVector(-SCTankRadius-0.5*m,0,0));
+  
+  // exit flange hole:
+  G4double SCExitFlangeHoleHeight    = 7.85*inch;
+  G4double SCExitFlangeHoleAngleApert = 38.25*deg;
+  
+  G4Tubs* solidSCExFH = new G4Tubs("SCExFH", SCRadius-1.0*cm, SCTankRadius+1.5*inch,
+				   0.5*SCExitFlangeHoleHeight, 0.0, SCExitFlangeHoleAngleApert);
+  
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateZ(180.0*deg+SCExitFlangeHoleAngleApert*0.5);
+  
+  G4SubtractionSolid* solidSCTank_0_exfh = new G4SubtractionSolid("solidSCTank_0_exfh", solidSCTank_0_exf, solidSCExFH,
+								  rot_temp, G4ThreeVector(0,0,SCOffset));
+  
+  // windows holes: 
+  G4double SCWindowHeight      = 18.0*inch;
+  G4double SCWindowAngleApert  = 149.0*deg;
+  G4double SCWindowAngleOffset = 11.0*deg;
+  
+  G4Tubs* solidSCWindow = new G4Tubs("SCWindow", SCRadius-1.0*cm, SCTankRadius+1.0*cm,
+				     0.5*SCWindowHeight, 0.0, SCWindowAngleApert);
+  
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateZ(90.0*deg+SCWindowAngleApert*0.5-SCWindowAngleOffset);
+  
+  G4SubtractionSolid* solidSCTank_0_wf = new G4SubtractionSolid("solidSCTank_0_wf", solidSCTank_0_exfh, solidSCWindow,
+								rot_temp, G4ThreeVector(0,0,SCOffset));
+  
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateZ(-90.0*deg+SCWindowAngleApert*0.5+SCWindowAngleOffset);
+  
+  G4SubtractionSolid* solidSCTank_0_wb = new G4SubtractionSolid("solidSCTank_0_wb", solidSCTank_0_wf, solidSCWindow,
+								rot_temp, G4ThreeVector(0,0,SCOffset));
+
+  //---------------------------------------------------------------------------  
+  // Scattering chamber tank (aluminum)
+  
+  G4VSolid* solidScatChamberTank = solidSCTank_0_wb;
+  logicScatChamberTank =   new G4LogicalVolume(solidScatChamberTank,
+					       fNistManager->FindOrBuildMaterial("G4_Al"), "ScatChamberTank_log");
+  
+  G4RotationMatrix* rotSC = new G4RotationMatrix();
+  rotSC->rotateX(-90.0*deg);
+  
+  G4ThreeVector* SCPlacement = new G4ThreeVector(0,-fDistTarPivot*cm,-SCOffset);
+  SCPlacement->rotateX(90*deg);
+
+  fNSD = ntargs;
+  fDetVol[fNSD] = new G4PVPlacement(rotSC, *SCPlacement, logicScatChamberTank, "ScatChamberTankPhys", expHall_log, false, fNSD, ChkOverlaps);
+
+  //---------------------------------------------------------------------------  
+  // Scattering chamber volume (vacuum)
+
+  G4Tubs* solidExitBeamPipeHole     = new G4Tubs("solidBackViewPipeHole", 
+						 0.0, 175.0*mm, 7.903*inch, 0.0, 360.0*deg);  // DJH: artificially increased radius for now
+  
+  G4Tubs* solidEntranceBeamPipeHole = new G4Tubs("solidEntranceBeamPipeHole",
+						 0.0, 1.0*inch, 5.375*inch, 0.0, 360.0*deg);
+  
+  G4Tubs* solidScatChamber_0        = new G4Tubs("SC", 0.0, SCRadius, 0.5* SCHeight, 0.0*deg, 360.0*deg);
+  
+  G4Tubs* solidSCWindowVacuum       = new G4Tubs("SCWindowVacuumFront", SCRadius-1.0*cm, SCTankRadius,
+						 0.5*SCWindowHeight, 0.0, SCWindowAngleApert);
+  
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateZ(90.0*deg+SCWindowAngleApert*0.5-SCWindowAngleOffset);
+  
+  G4UnionSolid* solidScatChamber_0_wbv = new G4UnionSolid("solidScatChamber_0_wbv", solidScatChamber_0, solidSCWindowVacuum,
+							  rot_temp, G4ThreeVector(0,0,SCOffset));
+  
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateZ(-90.0*deg+SCWindowAngleApert*0.5+SCWindowAngleOffset);
+  
+  rot_temp = new G4RotationMatrix();
+  rot_temp->rotateX(90.0*deg);
+
+  G4UnionSolid* solidScatChamber_0_entbp = new G4UnionSolid("solidScatChamber_0_entbp", solidScatChamber_0_wbv,
+							     solidEntranceBeamPipeHole, 
+							     rot_temp, G4ThreeVector(0, -SCRadius, SCOffset));
+
+  G4UnionSolid* solidScatChamber_0_exbp  = new G4UnionSolid("solidScatChamber_0_exbp", solidScatChamber_0_entbp,
+							    solidExitBeamPipeHole, 
+							    rot_temp, G4ThreeVector(0, +SCRadius, SCOffset));
+  
+  G4VSolid* solidScatChamber = solidScatChamber_0_exbp;
+  logicScatChamber = new G4LogicalVolume(solidScatChamber, Beamline, "ScatChamber_log");
+  new G4PVPlacement(rotSC, *SCPlacement, logicScatChamber, "ScatChamberPhys",
+		    expHall_log, false, ++nonSDcounter, ChkOverlaps);
+
+
+  //--------------------------------------------------------------------------- 
+  // Create APEX targets (from Silviu's CAD model -- need to add offsets, etc)
+  //---------------------------------------------------------------------------
+  
   // Target mother volume
   G4Box *TargMother_box = new G4Box("solidTarg", targwidth, targwidth, 350. *mm );
   G4LogicalVolume *TargMother_log = new G4LogicalVolume( TargMother_box, Beamline, "TargMother_log" );
@@ -425,6 +436,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Target solids
   char solidname[100];
   G4VSolid *Target_solid;
+  G4LogicalVolume *Target_log;
+  
   for( G4int itarg=0; itarg<ntargs; itarg++ ) {
 
     sprintf(solidname, "Target_solid%d", itarg );
@@ -435,23 +448,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     
     G4String logname = solidname;
     logname += "_log";
-    G4LogicalVolume *Target_log = new G4LogicalVolume( Target_solid, targMaterial, logname );
+    Target_log = new G4LogicalVolume( Target_solid, targMaterial, logname );
 
     G4String physname = solidname;
     physname += "_phys";
     if( fTargetType == kVWires ) {
       rot_temp = new G4RotationMatrix();
       rot_temp->rotateX(90.0*deg);  
-      new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, ++nonSDcounter );
+      fDetVol[itarg] = new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, itarg );
     }
     else if( fTargetType == kHWires ) {
       rot_temp = new G4RotationMatrix();
       rot_temp->rotateY(90.0*deg);  
-      new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, ++nonSDcounter );
+      fDetVol[itarg] = new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, itarg );
     }
     else
-      new G4PVPlacement( 0, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, ++nonSDcounter );
+      fDetVol[itarg] = new G4PVPlacement( 0, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, itarg );
   }
+
+  outfile << "Target wires / foils have copy id 0 to " << ntargs-1 << std::endl;
+  outfile << "Scattering chamber window has copy id " << ntargs << std::endl;
 
   //--------------------------------------------------------------------------- 
   // Create Septum (from original APEX G4)
@@ -850,40 +866,40 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //now start to build box then subtract 63 holes 
   G4VSolid* sieveSlitWholeSolid      = new G4Box("sieveSlitWholeBox",pSieveSlitX/2.0,
-						 pSieveSlitY/2.0,pSieveSlitZ/2.0);
+  						 pSieveSlitY/2.0,pSieveSlitZ/2.0);
 
   G4VSolid* sieveSlitHoleSolid       = new G4Tubs("sieveSlitHoleTubs",0,pSieveSlitHoleR,
-						  pSieveSlitHoldL/2.0,startphi,deltaphi); 
+  						  pSieveSlitHoldL/2.0,startphi,deltaphi); 
   
   G4VSolid* sieveSlitLargeHoleSolid  = new G4Tubs("sieveSlitLargeHoleTubs",0,
-						  pSieveSlitLargeHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
+  						  pSieveSlitLargeHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
   
   G4VSolid* sieveSlitMediumHoleSolid = new G4Tubs("sieveSlitMediumHoleTubs",0,
-						  pSieveSlitMediumHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
+  						  pSieveSlitMediumHoleR,pSieveSlitHoldL/2.0,startphi,deltaphi); 
 
   // DJH: added else if because medium holes were overlapping small holes in original
   G4SubtractionSolid* sieveSlitSolid = (G4SubtractionSolid*)sieveSlitWholeSolid;
   char strName[100];
   for(int ih=0;ih<15;ih++) {
       for(int iv=0;iv<9;iv++) {
-	sprintf(strName,"sieveSlitHole_H%d_V%d",ih,iv);
-	if((ih==7 && iv==4) || (ih==3 && iv==2)) {
-	  //now dig large holes in the block
-	  sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
-						sieveSlitLargeHoleSolid,0,
-						G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv],0));
-	}
-	else if ((iv>=7) || (iv<2)) {
-	  sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
-						sieveSlitMediumHoleSolid,0,
-						G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv], 0.3*inch));
-	}
-	else {
-	  //now dig small holes in the block
-	  sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
-						sieveSlitHoleSolid,0,
-						G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv], 0));
-	}
+  	sprintf(strName,"sieveSlitHole_H%d_V%d",ih,iv);
+  	if((ih==7 && iv==4) || (ih==3 && iv==2)) {
+  	  //now dig large holes in the block
+  	  sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+  						sieveSlitLargeHoleSolid,0,
+  						G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv],0));
+  	}
+  	else if ((iv>=7) || (iv<2)) {
+  	  sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+  						sieveSlitMediumHoleSolid,0,
+  						G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv], 0.3*inch));
+  	}
+  	else {
+  	  //now dig small holes in the block
+  	  sieveSlitSolid=new G4SubtractionSolid(strName,sieveSlitSolid,
+  						sieveSlitHoleSolid,0,
+  						G4ThreeVector(pSieveSlitHolePosH[ih],pSieveSlitHolePosV[iv], 0));
+  	}
       }
   }
 
@@ -912,8 +928,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   sieveSlitSolid->SetName("sieveSlitSolid");
   
   G4LogicalVolume* sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
-							  fNistManager->FindOrBuildMaterial("G4_AIR"),
-							  "sieveSlitLogical",0,0,LarmStepLimits);
+  							  fNistManager->FindOrBuildMaterial("G4_AIR"),
+  							  "sieveSlitLogical",0,0,LarmStepLimits);
 
   G4RotationMatrix *R_RotY90deg_sieve_slit=new G4RotationMatrix();
   R_RotY90deg_sieve_slit->rotateY(-fSieveAngle*deg);
@@ -922,13 +938,42 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   if( fSieveOn ) {
     new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieve_pos_x, 0, sieve_pos_z),
-		      sieveSlitLogical,"RSievePhys", expHall_log, 0, 0, 0);
+  		      sieveSlitLogical,"RSievePhys", expHall_log, 0, 0, 0);
     
     
     new G4PVPlacement(L_RotY90deg_sieve_slit,G4ThreeVector(-sieve_pos_x, 0, sieve_pos_z),
-		      sieveSlitLogical,"LSievePhys", expHall_log, 0, 0, 0);
+  		      sieveSlitLogical,"LSievePhys", expHall_log, 0, 0, 0);
   }
   
+  //--------------------------------------------------------------------------- 
+  // Create Sieve Slit Virtual Detector
+  //--------------------------------------------------------------------------- 
+
+  double sieveVD_distance  = 31.23*inch - 0.5 *inch;
+
+  double sieveVD_pos_z     = -fDistTarPivot*cm+(sieveVD_distance + pSieveSlitZ/2.)*cos(fSieveAngle*deg); // DJH: was 105.30001365 cm and 5.81 degrees???
+  double sieveVD_pos_x     = (sieveVD_distance + pSieveSlitZ/2.)*sin(fSieveAngle*deg);                   // DJH: was 5.81 degrees???
+
+  G4VSolid* sieveSlitVD = new G4Box("sieveSlitVD",pSieveSlitX/2.0,
+  				    pSieveSlitY/2.0,pSieveSlitZ/2.0);
+
+  G4LogicalVolume* sieveSlitVDLogical = new G4LogicalVolume(sieveSlitVD,
+  							  fNistManager->FindOrBuildMaterial("G4_AIR"),
+  							  "sieveSlitVDLogical",0,0,LarmStepLimits);
+
+
+  fNSD++;
+  fDetVol[fNSD] = new G4PVPlacement(L_RotY90deg_sieve_slit,G4ThreeVector(-sieveVD_pos_x, 0, sieveVD_pos_z),
+  				      sieveSlitVDLogical,"LSievePhysVD", expHall_log, false, fNSD);
+  
+  outfile  << "Left sieve virtual detector has copy id " << fNSD << std::endl;
+  
+  fNSD++;
+  fDetVol[fNSD] = new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieveVD_pos_x, 0, sieveVD_pos_z),
+  				      sieveSlitVDLogical,"RSievePhysVD", expHall_log, false, fNSD);
+
+  outfile  << "Right sieve virtual detector has copy id " << fNSD << std::endl;
+
   //--------------------------------------------------------------------------- 
   // Create Q1 SOS (from original APEX G4)
   //--------------------------------------------------------------------------- 
@@ -937,12 +982,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   double pQ1Length       = 1.0 *cm;
   
   G4VSolid* Q1_tubs      = new G4Tubs("Q1Front",
-				      0, 2*(pQ1Rin+1.*cm), pQ1Length/2., // make virtual detector radius 1cm larger
-				      0.0, 360.0*deg);
+  				      0, 2*(pQ1Rin+1.*cm), pQ1Length/2., // make virtual detector radius 1cm larger
+  				      0.0, 360.0*deg);
   
   G4LogicalVolume* Q1_log = new G4LogicalVolume(Q1_tubs,
-						fNistManager->FindOrBuildMaterial("G4_AIR"), 
-						"Q1_log", 0, 0, 0); 
+  						fNistManager->FindOrBuildMaterial("G4_AIR"), 
+  						"Q1_log", 0, 0, 0); 
 
   //--------------------------------------------------------------------------- 
     
@@ -953,9 +998,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4RotationMatrix* LQ1_rm  = new G4RotationMatrix(); 
   LQ1_rm->rotateY(LQ1_th); 
 
-  fDetVol[0]                    = new G4PVPlacement(LQ1_rm, G4ThreeVector(LQ1_xprime,0.,LQ1_zprime), 
-						    Q1_log, "LQ1", expHall_log, false, SDcounter);
+  fNSD++;
+  fDetVol[fNSD]                    = new G4PVPlacement(LQ1_rm, G4ThreeVector(LQ1_xprime,0.,LQ1_zprime), 
+  							 Q1_log, "LQ1", expHall_log, false, fNSD);
 
+  outfile  << "Left Q1 virtual detector has copy id " << fNSD << std::endl;
+  
   //--------------------------------------------------------------------------- 
   
   G4double RQ1_th           = -fHRSAngle *deg; 
@@ -964,10 +1012,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
   G4RotationMatrix* RQ1_rm  = new G4RotationMatrix(); 
   RQ1_rm->rotateY(RQ1_th); 
-     
-  fDetVol[1]                    = new G4PVPlacement(RQ1_rm, G4ThreeVector(RQ1_xprime,0.,RQ1_zprime), 
-						    Q1_log, "RQ1", expHall_log, false, ++SDcounter); 
 
+  fNSD++;
+  fDetVol[fNSD]                    = new G4PVPlacement(RQ1_rm, G4ThreeVector(RQ1_xprime,0.,RQ1_zprime), 
+  							 Q1_log, "RQ1", expHall_log, false, fNSD); 
+
+  outfile  << "Right Q1 virtual detector has copy id " << fNSD << std::endl;
+    
   //---------------------------------------------------------------------------
   // Set Logical Attributes
   //---------------------------------------------------------------------------
@@ -977,7 +1028,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   fFluxSD = new FluxSD("FluxSD", fNSD);
   SDman->AddNewDetector( fFluxSD );
   Q1_log->SetSensitiveDetector( fFluxSD );
-
+  logicScatChamberTank->SetSensitiveDetector( fFluxSD );
+  Target_log->SetSensitiveDetector( fFluxSD );
+  sieveSlitVDLogical->SetSensitiveDetector( fFluxSD );
+  
   // Magnetic field
   expHall_log->SetFieldManager(fm, true);
 
@@ -989,6 +1043,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //---------------------------------------------------------------------------
 
+  outfile.close();
+  
   return fExpHall;
 }
 

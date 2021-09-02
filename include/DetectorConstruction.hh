@@ -44,10 +44,12 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   G4NistManager*     fNistManager;
   DetectorMessenger* fDetMessenger;
 
-  static const G4int fNSD = 2;
+  static const G4int fMaxNSD = 50;
 
+  G4int fNSD;
+  
   G4VPhysicalVolume* fExpHall;
-  G4VPhysicalVolume* fDetVol[fNSD];
+  G4VPhysicalVolume* fDetVol[fMaxNSD];
   G4VPhysicalVolume* fSurfVol;
 
   FluxSD*            fFluxSD;
