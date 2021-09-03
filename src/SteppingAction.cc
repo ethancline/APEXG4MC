@@ -27,16 +27,15 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
   G4StepPoint* prePoint = aStep->GetPreStepPoint();
   G4StepPoint* endPoint = aStep->GetPostStepPoint();
 
+  FluxSD* fluxSD = (FluxSD*)detector->GetFluxSD();
+  
   for(int i=0; i<=detector->GetNoSD(); i++) {
 
     if ( prePoint->GetTouchableHandle()->GetVolume() != detector->GetDetVol(i) &&
-	 endPoint->GetTouchableHandle()->GetVolume() == detector->GetDetVol(i) )
-      {
-	
-	FluxSD* fluxSD = (FluxSD*)detector->GetFluxSD();
-	if(fluxSD) 
-	  fluxSD->ProcessHits_constStep(aStep,NULL);
-      }
+	 endPoint->GetTouchableHandle()->GetVolume() == detector->GetDetVol(i) ) {
+      if(fluxSD) 
+    	fluxSD->ProcessHits_constStep(aStep,NULL);
+    }
 
   }
 }

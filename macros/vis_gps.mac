@@ -10,9 +10,26 @@
 # Set output options
 ##################################################################
 
-/APEXG4MC/analysis/setOutputFile batch_test.root
+/APEXG4MC/analysis/setOutputFile vis_gps.root
 
 ##################################################################
+# Set visualisation options
+##################################################################
+
+/vis/scene/create
+/vis/open OGLS 800x800-0+0
+/vis/viewer/set/viewpointThetaPhi 90 91
+/vis/scene/add/trajectories
+/vis/scene/add/magneticField
+/vis/scene/endOfEventAction accumulate
+/vis/viewer/select viewer-0
+/vis/viewer/rebuild
+
+##################################################################
+# Set generator options
+##################################################################
+
+/APEXG4MC/generator/Mode 0
 
 /gps/source/clear
 /gps/source/multiplevertex true
@@ -25,7 +42,7 @@
 /gps/ang/rot1 -11.4795 0 1
 /gps/energy 1 GeV
 /gps/pos/type Point
-/gps/pos/centre 0. 0. -0.01 m
+/gps/pos/centre 0. 0. -105.291 cm
 
 /gps/source/add 2
 /gps/particle e+
@@ -35,6 +52,5 @@
 /gps/ang/rot1 -11.4795 0 -1
 /gps/energy 1 GeV
 /gps/pos/type Point
-/gps/pos/centre 0. 0. 0.01 m
+/gps/pos/centre 0. 0. -105.289 cm
 
-/run/beamOn 10000

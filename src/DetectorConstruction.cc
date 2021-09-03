@@ -117,140 +117,139 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Define APEX targets (from Silviu's CAD model -- need to add offsets, etc)
   //--------------------------------------------------------------------------- 
 
-  G4int       ntargs;
-  G4double    targwidth, targthick;
-  G4Material* targMaterial;
-  G4double    targzpos[10] = { 0.0 };
-  G4double    targxpos[10] = { 0.0 };
-  G4double    targypos[10] = { 0.0 };
+  for(int i=0; i<fMaxTargs; i++ ) {
+    fTargzpos[i] = { 0.0 };
+    fTargxpos[i] = { 0.0 };
+    fTargypos[i] = { 0.0 };
+  }
   
   if( fTarget.compareTo("ProdW") == 0 )
-    fTargetType = kProdW;
+    fTargetType = APEX::kProdW;
   else if( fTarget.compareTo("ProdC") == 0 )
-    fTargetType = kProdC;
+    fTargetType  = APEX::kProdC;
   else if( fTarget.compareTo("Optics1") == 0 )
-    fTargetType = kOptics1;
+    fTargetType = APEX::kOptics1;
   else if( fTarget.compareTo("Optics2") == 0 )
-    fTargetType = kOptics2;
+    fTargetType = APEX::kOptics2;
   else if( fTarget.compareTo("Optics3") == 0 )
-    fTargetType = kOptics3;
+    fTargetType = APEX::kOptics3;
   else if( fTarget.compareTo("VWires") == 0 )
-    fTargetType = kVWires;
+    fTargetType = APEX::kVWires;
   else if( fTarget.compareTo("HWires") == 0 )
-    fTargetType = kHWires;
+    fTargetType = APEX::kHWires;
   else {
     cout << "Unknown target type " << fTarget << " setting to W production" << endl;
-    fTargetType = kProdW;
+    fTargetType = APEX::kProdW;
   }
   
   switch(fTargetType){
-  case kProdW:
-    ntargs       = 10;
-    targwidth    = 2.5*mm;
-    targthick    = 0.01*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
-    targzpos[0]  = -247.4 *mm;
-    targzpos[1]  = -192.4 *mm;
-    targzpos[2]  = -137.4 *mm;
-    targzpos[3]  = -82.4 *mm;
-    targzpos[4]  = -27.4 *mm;
-    targzpos[5]  = 27.6 *mm;
-    targzpos[6]  = 82.6 *mm;
-    targzpos[7]  = 137.6 *mm;
-    targzpos[8]  = 192.6 *mm;
-    targzpos[9]  = 247.6 *mm;
+  case APEX::kProdW:
+    fNtargs       = 10;
+    fTargwidth    = 2.5*mm;
+    fTargthick    = 0.01*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    fTargzpos[0]  = -247.4 *mm;
+    fTargzpos[1]  = -192.4 *mm;
+    fTargzpos[2]  = -137.4 *mm;
+    fTargzpos[3]  = -82.4 *mm;
+    fTargzpos[4]  = -27.4 *mm;
+    fTargzpos[5]  = 27.6 *mm;
+    fTargzpos[6]  = 82.6 *mm;
+    fTargzpos[7]  = 137.6 *mm;
+    fTargzpos[8]  = 192.6 *mm;
+    fTargzpos[9]  = 247.6 *mm;
     break;
-  case kProdC:
-    ntargs       = 10;
-    targwidth    = 2.5*mm;
-    targthick    = 0.125*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
-    targzpos[0]  = -247.4 *mm;
-    targzpos[1]  = -192.4 *mm;
-    targzpos[2]  = -137.4 *mm;
-    targzpos[3]  = -82.4 *mm;
-    targzpos[4]  = -27.4 *mm;
-    targzpos[5]  = 27.6 *mm;
-    targzpos[6]  = 82.6 *mm;
-    targzpos[7]  = 137.6 *mm;
-    targzpos[8]  = 192.6 *mm;
-    targzpos[9]  = 247.6 *mm;
+  case APEX::kProdC:
+    fNtargs       = 10;
+    fTargwidth    = 2.5*mm;
+    fTargthick    = 0.125*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    fTargzpos[0]  = -247.4 *mm;
+    fTargzpos[1]  = -192.4 *mm;
+    fTargzpos[2]  = -137.4 *mm;
+    fTargzpos[3]  = -82.4 *mm;
+    fTargzpos[4]  = -27.4 *mm;
+    fTargzpos[5]  = 27.6 *mm;
+    fTargzpos[6]  = 82.6 *mm;
+    fTargzpos[7]  = 137.6 *mm;
+    fTargzpos[8]  = 192.6 *mm;
+    fTargzpos[9]  = 247.6 *mm;
     break;
-  case kOptics1:
-    ntargs       = 4;
-    targwidth    = 5.0*mm;
-    targthick    = 0.2*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
-    targzpos[0]  = -300.0 *mm;
-    targzpos[1]  = -150.0 *mm;
-    targzpos[2]  = 75.0 *mm;
-    targzpos[3]  = 219.0 *mm;
+  case APEX::kOptics1:
+    fNtargs       = 4;
+    fTargwidth    = 5.0*mm;
+    fTargthick    = 0.2*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    fTargzpos[0]  = -300.0 *mm;
+    fTargzpos[1]  = -150.0 *mm;
+    fTargzpos[2]  = 75.0 *mm;
+    fTargzpos[3]  = 219.0 *mm;
     break;
-  case kOptics2:
-    ntargs       = 4;
-    targwidth    = 5.0*mm;
-    targthick    = 0.2*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
-    targzpos[0]  = -300.0 *mm;
-    targzpos[1]  = -219.0 *mm;
-    targzpos[2]  = -150.0 *mm;
-    targzpos[3]  = -75.0 *mm;
-    targzpos[4]  = 75.0 *mm;
-    targzpos[5]  = 150.0 *mm;
-    targzpos[6]  = 219.0 *mm;
-    targzpos[7]  = 300.0 *mm;
+  case APEX::kOptics2:
+    fNtargs       = 4;
+    fTargwidth    = 5.0*mm;
+    fTargthick    = 0.2*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    fTargzpos[0]  = -300.0 *mm;
+    fTargzpos[1]  = -219.0 *mm;
+    fTargzpos[2]  = -150.0 *mm;
+    fTargzpos[3]  = -75.0 *mm;
+    fTargzpos[4]  = 75.0 *mm;
+    fTargzpos[5]  = 150.0 *mm;
+    fTargzpos[6]  = 219.0 *mm;
+    fTargzpos[7]  = 300.0 *mm;
     break;
-  case kOptics3:
-    ntargs       = 4;
-    targwidth    = 5.0*mm;
-    targthick    = 0.2*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_C");
-    targzpos[0]  = -219.0 *mm;
-    targzpos[1]  = -75.0 *mm;
-    targzpos[2]  = 150 *mm;
-    targzpos[3]  = 300 *mm;
+  case APEX::kOptics3:
+    fNtargs       = 4;
+    fTargwidth    = 5.0*mm;
+    fTargthick    = 0.2*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_C");
+    fTargzpos[0]  = -219.0 *mm;
+    fTargzpos[1]  = -75.0 *mm;
+    fTargzpos[2]  = 150 *mm;
+    fTargzpos[3]  = 300 *mm;
     break;
-  case kVWires:
-    ntargs       = 3;
-    targwidth    = 30.0*mm;
-    targthick    = 0.1*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
-    targzpos[0]  = -200.0 *mm;
-    targzpos[1]  = 0.0 *mm;
-    targzpos[2]  = 200. *mm;
-    targxpos[0]  = -2.5 *mm;
-    targxpos[1]  = 0.0 *mm;
-    targxpos[2]  = 2.5 *mm;
+  case APEX::kVWires:
+    fNtargs       = 3;
+    fTargwidth    = 30.0*mm;
+    fTargthick    = 0.1*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    fTargzpos[0]  = -200.0 *mm;
+    fTargzpos[1]  = 0.0 *mm;
+    fTargzpos[2]  = 200. *mm;
+    fTargxpos[0]  = -2.5 *mm;
+    fTargxpos[1]  = 0.0 *mm;
+    fTargxpos[2]  = 2.5 *mm;
     break;
-  case kHWires:
-    ntargs       = 4;
-    targwidth    = 30.0*mm;
-    targthick    = 0.1*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
-    targzpos[0]  = -250.0 *mm;
-    targzpos[1]  = -100.0 *mm;
-    targzpos[2]  = 100. *mm;
-    targzpos[3]  = 250. *mm;
-    targypos[0]  = 0.0 *mm;
-    targypos[1]  = 5.0 *mm;
-    targypos[2]  = 10. *mm;
-    targypos[3]  = 15. *mm;
+  case APEX::kHWires:
+    fNtargs       = 4;
+    fTargwidth    = 30.0*mm;
+    fTargthick    = 0.1*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    fTargzpos[0]  = -250.0 *mm;
+    fTargzpos[1]  = -100.0 *mm;
+    fTargzpos[2]  = 100. *mm;
+    fTargzpos[3]  = 250. *mm;
+    fTargypos[0]  = 0.0 *mm;
+    fTargypos[1]  = 5.0 *mm;
+    fTargypos[2]  = 10. *mm;
+    fTargypos[3]  = 15. *mm;
     break;
   default: // kProdW
-    ntargs       = 10;
-    targwidth    = 2.5*mm;
-    targthick    = 0.01*mm;
-    targMaterial = fNistManager->FindOrBuildMaterial("G4_W");
-    targzpos[0]  = -247.4 *mm;
-    targzpos[1]  = -192.4 *mm;
-    targzpos[2]  = -137.4 *mm;
-    targzpos[3]  = -82.4 *mm;
-    targzpos[4]  = -27.4 *mm;
-    targzpos[5]  = 27.6 *mm;
-    targzpos[6]  = 82.6 *mm;
-    targzpos[7]  = 137.6 *mm;
-    targzpos[8]  = 192.6 *mm;
-    targzpos[9]  = 247.6 *mm;
+    fNtargs       = 10;
+    fTargwidth    = 2.5*mm;
+    fTargthick    = 0.01*mm;
+    fTargMaterial = fNistManager->FindOrBuildMaterial("G4_W");
+    fTargzpos[0]  = -247.4 *mm;
+    fTargzpos[1]  = -192.4 *mm;
+    fTargzpos[2]  = -137.4 *mm;
+    fTargzpos[3]  = -82.4 *mm;
+    fTargzpos[4]  = -27.4 *mm;
+    fTargzpos[5]  = 27.6 *mm;
+    fTargzpos[6]  = 82.6 *mm;
+    fTargzpos[7]  = 137.6 *mm;
+    fTargzpos[8]  = 192.6 *mm;
+    fTargzpos[9]  = 247.6 *mm;
     break;
   }
 
@@ -379,9 +378,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4ThreeVector* SCPlacement = new G4ThreeVector(0,-fDistTarPivot*cm,-SCOffset);
   SCPlacement->rotateX(90*deg);
 
-  fNSD = ntargs;
   fDetVol[fNSD] = new G4PVPlacement(rotSC, *SCPlacement, logicScatChamberTank, "ScatChamberTankPhys", expHall_log, false, fNSD, ChkOverlaps);
-
+  outfile  << "Scattering chamber tank has copy id " << fNSD << std::endl;
+  
   //---------------------------------------------------------------------------  
   // Scattering chamber volume (vacuum)
 
@@ -427,7 +426,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //---------------------------------------------------------------------------
   
   // Target mother volume
-  G4Box *TargMother_box = new G4Box("solidTarg", targwidth, targwidth, 350. *mm );
+  G4Box *TargMother_box = new G4Box("solidTarg", fTargwidth, fTargwidth, 350. *mm );
   G4LogicalVolume *TargMother_log = new G4LogicalVolume( TargMother_box, Beamline, "TargMother_log" );
   rot_temp = new G4RotationMatrix();
   rot_temp->rotateX(90.0*deg);  
@@ -438,36 +437,33 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VSolid *Target_solid;
   G4LogicalVolume *Target_log;
   
-  for( G4int itarg=0; itarg<ntargs; itarg++ ) {
+  for( G4int itarg=0; itarg<fNtargs; itarg++ ) {
 
     sprintf(solidname, "Target_solid%d", itarg );
-    if( fTargetType == kVWires || fTargetType == kHWires )
-      Target_solid = new G4Tubs(G4String(solidname), 0., targthick/2., targwidth/2., 0.0, 360.0 *deg );
+    if( fTargetType == APEX::kVWires || fTargetType == APEX::kHWires )
+      Target_solid = new G4Tubs(G4String(solidname), 0., fTargthick/2., fTargwidth/2., 0.0, 360.0 *deg );
     else
-      Target_solid = new G4Box(G4String(solidname), targwidth/2., targwidth/2., targthick/2. );
+      Target_solid = new G4Box(G4String(solidname), fTargwidth/2., fTargwidth/2., fTargthick/2. );
     
     G4String logname = solidname;
     logname += "_log";
-    Target_log = new G4LogicalVolume( Target_solid, targMaterial, logname );
+    Target_log = new G4LogicalVolume( Target_solid, fTargMaterial, logname );
 
     G4String physname = solidname;
     physname += "_phys";
-    if( fTargetType == kVWires ) {
+    if( fTargetType == APEX::kVWires ) {
       rot_temp = new G4RotationMatrix();
       rot_temp->rotateX(90.0*deg);  
-      fDetVol[itarg] = new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, itarg );
+      fDetVol[itarg] = new G4PVPlacement( rot_temp, G4ThreeVector( fTargxpos[itarg], fTargypos[itarg], fTargzpos[itarg]), Target_log, physname, TargMother_log, false,  ++nonSDcounter );
     }
-    else if( fTargetType == kHWires ) {
+    else if( fTargetType == APEX::kHWires ) {
       rot_temp = new G4RotationMatrix();
       rot_temp->rotateY(90.0*deg);  
-      fDetVol[itarg] = new G4PVPlacement( rot_temp, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, itarg );
+      fDetVol[itarg] = new G4PVPlacement( rot_temp, G4ThreeVector( fTargxpos[itarg], fTargypos[itarg], fTargzpos[itarg]), Target_log, physname, TargMother_log, false,  ++nonSDcounter );
     }
     else
-      fDetVol[itarg] = new G4PVPlacement( 0, G4ThreeVector( targxpos[itarg], targypos[itarg], targzpos[itarg]), Target_log, physname, TargMother_log, false, itarg );
+      fDetVol[itarg] = new G4PVPlacement( 0, G4ThreeVector( fTargxpos[itarg], fTargypos[itarg], fTargzpos[itarg]), Target_log, physname, TargMother_log, false,  ++nonSDcounter );
   }
-
-  outfile << "Target wires / foils have copy id 0 to " << ntargs-1 << std::endl;
-  outfile << "Scattering chamber window has copy id " << ntargs << std::endl;
 
   //--------------------------------------------------------------------------- 
   // Create Septum (from original APEX G4)
@@ -928,7 +924,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   sieveSlitSolid->SetName("sieveSlitSolid");
   
   G4LogicalVolume* sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
-  							  fNistManager->FindOrBuildMaterial("G4_AIR"),
+  							  fNistManager->FindOrBuildMaterial("G4_W"),
   							  "sieveSlitLogical",0,0,LarmStepLimits);
 
   G4RotationMatrix *R_RotY90deg_sieve_slit=new G4RotationMatrix();
@@ -938,11 +934,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   if( fSieveOn ) {
     new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieve_pos_x, 0, sieve_pos_z),
-  		      sieveSlitLogical,"RSievePhys", expHall_log, 0, 0, 0);
+  		      sieveSlitLogical,"RSievePhys", expHall_log, 0, ++nonSDcounter);
     
     
     new G4PVPlacement(L_RotY90deg_sieve_slit,G4ThreeVector(-sieve_pos_x, 0, sieve_pos_z),
-  		      sieveSlitLogical,"LSievePhys", expHall_log, 0, 0, 0);
+  		      sieveSlitLogical,"LSievePhys", expHall_log, 0, ++nonSDcounter);
   }
   
   //--------------------------------------------------------------------------- 
@@ -959,7 +955,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4LogicalVolume* sieveSlitVDLogical = new G4LogicalVolume(sieveSlitVD,
   							  fNistManager->FindOrBuildMaterial("G4_AIR"),
-  							  "sieveSlitVDLogical",0,0,LarmStepLimits);
+							    "sieveSlitVDLogical",0,0,0);
 
 
   fNSD++;
@@ -1029,7 +1025,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   SDman->AddNewDetector( fFluxSD );
   Q1_log->SetSensitiveDetector( fFluxSD );
   logicScatChamberTank->SetSensitiveDetector( fFluxSD );
-  Target_log->SetSensitiveDetector( fFluxSD );
   sieveSlitVDLogical->SetSensitiveDetector( fFluxSD );
   
   // Magnetic field
