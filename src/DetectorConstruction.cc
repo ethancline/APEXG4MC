@@ -824,27 +824,29 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   new G4PVPlacement(r_pRotX90deg_cov_2_bot,G4ThreeVector(0,-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
 		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
   
-  // //--------------------------------------------------------------------------- 
-  // // DJH: particles are getting to the Q1 detectors between the septum apertures
-  // // -- add a temporary blocker for now
-  // //--------------------------------------------------------------------------- 
+  //--------------------------------------------------------------------------- 
+  // DJH: particles are getting to the Q1 detectors between the septum apertures
+  // -- add a temporary blocker for now
+  //--------------------------------------------------------------------------- 
 
-  // double blocker_X         = 10.0*cm;
-  // double blocker_Y         = 10.0*cm;
-  // double blocker_Z         = 10.0*cm;
-  // double blocker_distance  = 101*cm;
-  // double blocker_pos_z     = -fDistTarPivot*cm+(blocker_distance + blocker_Z/2.);
+  double blocker_X         = xmax_sep_ex1*2 - 4.8*cm; 
+  double blocker_Y         = 30.0*cm;
+  double blocker_Z         = 2.0*cm;
   
-  // G4VSolid* blocker = new G4Box("blocker", blocker_X/2.0, blocker_Y/2.0, blocker_Z/2.0);
+  G4VSolid* blocker = new G4Box("blocker", blocker_X/2.0, blocker_Y/2.0, blocker_Z/2.0);
 
-  // G4LogicalVolume* blockerLogical = new G4LogicalVolume(blocker,
-  // 							fNistManager->FindOrBuildMaterial("G4_W"),
-  // 							"blockerLogical",0,0,LarmStepLimits);
+  fBlockerLog = new G4LogicalVolume(blocker,
+				    fNistManager->FindOrBuildMaterial("G4_W"),
+				    "blockerLogical",0,0,LarmStepLimits);
 
-  // new G4PVPlacement(0,G4ThreeVector(0, 0, blocker_pos_z),
-  // 		    blockerLogical,"blockerPhys", expHall_log, false, ++nonSDcounter);
-  
+  new G4PVPlacement(0,G4ThreeVector(0., 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+2.5*cm),
+  		    fBlockerLog,"blockerPhys", expHall_log, false, ++nonSDcounter);
 
+  new G4PVPlacement(0,G4ThreeVector(xmax_sep_ex2+blocker_X/2.0+0.7*cm, 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+0.0*cm),
+  		    fBlockerLog,"blockerPhys", expHall_log, false, ++nonSDcounter);
+
+    new G4PVPlacement(0,G4ThreeVector(-xmax_sep_ex2-blocker_X/2.0-0.7*cm, 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+0.0*cm),
+  		    fBlockerLog,"blockerPhys", expHall_log, false, ++nonSDcounter);
 
   //--------------------------------------------------------------------------- 
   // Create Sieve (from original APEX G4)

@@ -30,7 +30,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   
   inline G4VPhysicalVolume* GetExpHall()       { return fExpHall;     };
   inline G4VPhysicalVolume* GetDetVol(G4int i) { return fDetVol[i];   };
-  inline G4VPhysicalVolume* GetSurfVol()       { return fSurfVol;     };
+  inline G4LogicalVolume*   GetBlockerVol()    { return fBlockerLog;  };
   inline FluxSD*            GetFluxSD()        { return fFluxSD;      };
   inline G4int              GetNoSD()          { return fNSD;         };
   inline G4int              GetTargetType()    { return fTargetType;  };
@@ -65,7 +65,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   
   G4VPhysicalVolume* fExpHall;
   G4VPhysicalVolume* fDetVol[fMaxNSD];
-  G4VPhysicalVolume* fSurfVol;
+  G4LogicalVolume*   fBlockerLog;
 
   FluxSD*            fFluxSD;
   EnergyDepositSD*   fEdepSD;
