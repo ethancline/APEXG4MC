@@ -6,6 +6,13 @@
 > cmake ../ (or cmake3 ../)
 > make -jX (X specifies number of cores to use)
 
+# Running the simulation in visualisation mode
+./APEXG4MC
+> then in the gui, /control/execute macros/vis_apex.mac
+
+# Running the simulation in batch mode
+./APEXG4MC macros/batch_apex.mac
+
 # Detector options (in macros/DetectorSetup.mac)
   /APEXG4MC/detector/HRSAngle 12.5
   Set the HRS angle in degrees.
