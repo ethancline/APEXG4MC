@@ -42,10 +42,10 @@ int main(int argc, char** argv)
   PhysicsList*  phys       = new PhysicsList();
   runManager->SetUserInitialization(phys);
 
-  PrimaryGeneratorAction* pga        = new PrimaryGeneratorAction();
+  DetectorConstruction*   detCon     = new DetectorConstruction();
+  PrimaryGeneratorAction* pga        = new PrimaryGeneratorAction( detCon );
   AnalysisManager*        anaManager = new AnalysisManager();
   EventAction*            event      = new EventAction( anaManager, pga );
-  DetectorConstruction*   detCon     = new DetectorConstruction();
 
   runManager->SetUserInitialization(detCon);
   runManager->SetUserAction(pga);
