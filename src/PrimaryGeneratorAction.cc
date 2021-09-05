@@ -47,7 +47,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
 
   G4int itarg;
-  G4double th, ph, p;
+  G4double th, ph, p, Etarg;
   G4ThreeVector p3_lab;
   
   switch(fMode) {
@@ -95,11 +95,11 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     ph = CLHEP::RandFlat::shoot(fPhMin *deg, fPhMax *deg);
     p  = CLHEP::RandFlat::shoot((1-fDeltaRange/2.)*fDetector->GetHRSMomentum()*GeV,
 				(1+fDeltaRange/2.)*fDetector->GetHRSMomentum()*GeV);
-
+  
     p3_lab.setX( p*sin(th)*cos(ph) );
     p3_lab.setY( p*sin(th)*sin(ph) );
     p3_lab.setZ( p*cos(th) );
-    
+
     fPDefinition = G4ParticleTable::GetParticleTable()->FindParticle("e-");      
     
     fParticleGun->SetParticlePosition( G4ThreeVector( fVx, fVy, fVz) );
@@ -120,6 +120,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fPDefinition = fParticleGun->GetParticleDefinition();
 
     // now generate the partner positron (keeping it simple for now)
+    // asumme triplet with flat target energy dist
+    Etarg = CLHEP::RandFlat::shoot(0.0, 0.18);
+
     fPDefinition = G4ParticleTable::GetParticleTable()->FindParticle("e+");      
 
     p3_lab.setX( (fBeamE*GeV - p)*sin(-th)*cos(-ph) );
@@ -127,7 +130,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     p3_lab.setZ( (fBeamE*GeV - p)*cos(-th) );
     
     fParticleGun->SetParticleMomentumDirection( p3_lab.unit() );
-    fParticleGun->SetParticleEnergy( fBeamE*GeV - p );
+    fParticleGun->SetParticleEnergy( fBeamE*GeV - Etarg - p );
     fParticleGun->SetParticleDefinition( fPDefinition );
     fParticleGun->GeneratePrimaryVertex(anEvent);
 

@@ -1002,7 +1002,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   double pQ1Length       = 1.0 *cm;
   
   G4VSolid* Q1_tubs      = new G4Tubs("Q1Front",
-  				      0, 2*(pQ1Rin+1.*cm), pQ1Length/2., // make virtual detector radius 1cm larger
+  				      0, (pQ1Rin+1.*cm), pQ1Length/2., // make virtual detector radius 1cm larger
   				      0.0, 360.0*deg);
   
   G4LogicalVolume* Q1_log = new G4LogicalVolume(Q1_tubs,
@@ -1011,7 +1011,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //--------------------------------------------------------------------------- 
     
-  G4double LQ1_th           = fHRSAngle *deg; 
+  G4double LQ1_th           = -fHRSAngle *deg; 
   G4double LQ1_d            = fDistPivotQ1 *cm - pQ1Length; 
   G4double LQ1_xprime       = -LQ1_d * std::sin(LQ1_th); 
   G4double LQ1_zprime       = LQ1_d * std::cos(LQ1_th); 
@@ -1023,10 +1023,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   							 Q1_log, "LQ1", expHall_log, false, fNSD);
 
   outfile  << "Left Q1 virtual detector has copy id " << fNSD << std::endl;
-  
+
   //--------------------------------------------------------------------------- 
   
-  G4double RQ1_th           = -fHRSAngle *deg; 
+  G4double RQ1_th           = fHRSAngle *deg; 
   G4double RQ1_d            = fDistPivotQ1 *cm - pQ1Length; 
   G4double RQ1_xprime       = -RQ1_d * std::sin(RQ1_th); 
   G4double RQ1_zprime       = RQ1_d * std::cos(RQ1_th); 
