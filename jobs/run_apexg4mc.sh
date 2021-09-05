@@ -33,7 +33,6 @@ rm -f extendedL.inp
 cat ext_part1 > extendedL.inp
 echo "     $nn	Monte-Carlo trials" >> extendedL.inp
 cat ext_part2 >> extendedL.inp
-scp $SIMC/infiles/* david@npc69.physics.gla.ac.uk:/home/david/geant4/aAPEX_G4MC/SIMC/infiles
 cd ..
 ./mc_hrs_single < inpL.txt
 cd worksim
@@ -50,7 +49,6 @@ rm -f extendedR.inp
 cat ext_part1 > extendedR.inp
 echo "     $nn	Monte-Carlo trials" >> extendedR.inp
 cat ext_part3 >> extendedR.inp
-scp $SIMC/infiles/* david@npc69.physics.gla.ac.uk:/home/david/geant4/aAPEX_G4MC/SIMC/infiles
 cd ..
 ./mc_hrs_single < inpR.txt
 cd worksim
