@@ -91,9 +91,8 @@ void ConvertToSIMC( TString fname="batch_apex.root" )
       
       TVector3 plab;
       TVector3 poslab;
-
       
-      if( Flux_id[j]  == 4 && Flux_pdg[j] == 11 ) { // look only at electrons in LHRS Q1
+      if( Flux_id[j]  == 3 && Flux_pdg[j] == 11 ) { // look only at electrons in LHRS Q1
 	
 	// convert lab angles to TCS angles
 	plab.SetXYZ( px, py, pz );
@@ -111,7 +110,7 @@ void ConvertToSIMC( TString fname="batch_apex.root" )
 	hLTa->Fill(Ldydz_tcs*1000., Ldxdz_tcs*1000.);
 
       }
-      else if( Flux_id[j]  == 3 && Flux_pdg[j] == -11 ) { // look only at positrons in RHRS Q1
+      else if( Flux_id[j]  == 4 && Flux_pdg[j] == -11 ) { // look only at positrons in RHRS Q1
 
 	// convert lab angles to TCS angles
 	plab.SetXYZ( px, py, pz );
