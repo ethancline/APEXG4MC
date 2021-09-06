@@ -51,6 +51,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   void SetSeptumScale   ( G4double ss ) { fScaleSeptum  = ss; }
   void SetSeptFieldMap  ( G4String mf ) { fFieldMapFile = mf; }
   void SetSieveOn       ( G4bool o    ) { fSieveOn      = o;  }
+  void SetSieveReal     ( G4bool r    ) { fSieveReal    = r;  }
   void SetSieveAngle    ( G4double sa ) { fSieveAngle   = sa; }
   void SetTarget        ( G4String t  ) { fTarget       = t;  }
 
@@ -80,6 +81,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction
   G4double           fScaleSeptum;
   G4String           fFieldMapFile;
   G4bool             fSieveOn;
+  G4bool             fSieveReal;
   G4double           fSieveAngle;
   G4String           fTarget;
 

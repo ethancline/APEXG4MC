@@ -4,6 +4,7 @@
 /APEXG4MC/detector/DistPivotQ1 171.095
 /APEXG4MC/detector/SeptumFieldScale 1.05
 /APEXG4MC/detector/SeptumFieldMap Septa-JB_map.table
-/APEXG4MC/detector/SieveOn false
+/APEXG4MC/detector/SieveOn true
 /APEXG4MC/detector/SieveAngle 5
+/APEXG4MC/detector/SieveReal false
 /APEXG4MC/detector/Target ProdW

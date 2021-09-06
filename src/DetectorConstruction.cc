@@ -59,6 +59,7 @@ DetectorConstruction::DetectorConstruction()
   fFieldMapFile = "Septa-JB_map.table"; // new septum geometry but not latest map
   fSieveOn      = false;
   fSieveAngle   = 5 *deg; // 5.81 degrees?
+  fSieveReal    = false;
   fTarget       = "ProdW";
   
   G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -850,6 +851,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   new G4PVPlacement(0,G4ThreeVector(-xmax_sep_ex2-blocker_X/2.0-0.7*cm, 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+0.0*cm),
   		    fBlockerLog[fNBlock],"blockerPhys", expHall_log, false, ++nonSDcounter);
 
+  fBlockerLog[fNBlock]->SetVisAttributes(G4VisAttributes::Invisible);
+  fNBlock++;
+  
   //--------------------------------------------------------------------------- 
   // Create Sieve (from original APEX G4)
   //---------------------------------------------------------------------------
@@ -877,19 +881,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //the hole positions relative to the slit center 
   double pSieveSlitHolePosH[15]={0.295, 0.485, 0.675, 0.865, 1.055, 1.245, 1.435, 1.625, 1.815, 2.005, 2.195, 2.385, 2.575, 2.765, 2.955};
   double pSieveSlitHolePosV[9] = {0.285, 0.745, 1.205, 1.665, 2.125, 2.585, 3.045, 3.505, 3.965};
+
   for(int ii=0;ii<15;ii++)
-    {
-      pSieveSlitHolePosH[ii] = (pSieveSlitHolePosH[ii]-1.625)*inch;
-    }
+        pSieveSlitHolePosH[ii] = (pSieveSlitHolePosH[ii]-1.625)*inch;
+  
   for(int ii=0;ii<9;ii++)
-    {
       pSieveSlitHolePosV[ii] = (pSieveSlitHolePosV[ii]-2.125)*inch;
-    }
+  
 
   //now start to build box then subtract 63 holes 
   G4VSolid* sieveSlitWholeSolid      = new G4Box("sieveSlitWholeBox",pSieveSlitX/2.0,
   						 pSieveSlitY/2.0,pSieveSlitZ/2.0);
-
+  
   G4VSolid* sieveSlitHoleSolid       = new G4Tubs("sieveSlitHoleTubs",0,pSieveSlitHoleR,
   						  pSieveSlitHoldL/2.0,startphi,deltaphi); 
   
@@ -948,15 +951,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // }
 
   sieveSlitSolid->SetName("sieveSlitSolid");
-  
-  G4LogicalVolume* sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
-  							  fNistManager->FindOrBuildMaterial("G4_W"),
-  							  "sieveSlitLogical",0,0,LarmStepLimits);
 
   G4RotationMatrix *R_RotY90deg_sieve_slit=new G4RotationMatrix();
   R_RotY90deg_sieve_slit->rotateY(-fSieveAngle*deg);
   G4RotationMatrix *L_RotY90deg_sieve_slit=new G4RotationMatrix();
   L_RotY90deg_sieve_slit->rotateY(fSieveAngle*deg);
+
+  G4LogicalVolume* sieveSlitLogical;
+  
+  if( fSieveReal ) {
+    sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
+					   fNistManager->FindOrBuildMaterial("G4_W"),
+					   "sieveSlitLogical",0,0,LarmStepLimits);
+  }
+  else {
+    fBlockerLog[fNBlock] = new G4LogicalVolume(sieveSlitSolid,
+					       fNistManager->FindOrBuildMaterial("G4_W"),
+					       "sieveSlitLogical",0,0,LarmStepLimits);
+
+    sieveSlitLogical = fBlockerLog[fNBlock];
+  }
 
   if( fSieveOn ) {
     new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieve_pos_x, 0, sieve_pos_z),
