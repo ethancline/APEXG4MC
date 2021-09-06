@@ -94,6 +94,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
       fAnaManager->SetPrimaryEnergy    ( (G4double)fPGA->GetEnergy() );
       fAnaManager->SetPrimaryTime      ( (G4double)fPGA->GetTime() );
       fAnaManager->SetPrimaryPDef      ( (G4ParticleDefinition*)fPGA->GetPrimPDef() );
+      fAnaManager->SetPrimaryVertex    ( (G4ThreeVector)fPGA->GetVertex() );
       
       fAnaManager->FillTree(); 
     }

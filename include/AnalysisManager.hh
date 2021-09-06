@@ -35,6 +35,7 @@ public:
   void SetPrimaryTime     (G4double       time )       { fPTime = time; }
   void SetPrimaryPDef     (G4ParticleDefinition* pdef) { fPPDef = pdef; }
   void SetPrimaryDirection(G4ThreeVector  dir  )       { fPdir  = dir;  }
+  void SetPrimaryVertex   (G4ThreeVector  vtx  )       { fPvtx  = vtx;  }
 
   void SetFluxPDef      ( G4ParticleDefinition* sp ) { fFluxpdef = sp;    }
   void SetFluxPosPre    ( G4ThreeVector  spos )      { fFluxpospre  = spos;  }
@@ -61,9 +62,13 @@ private:
   Float_t               fPth;
   Float_t               fPph;
   Float_t               fPTime;
+  Float_t               fPVx;
+  Float_t               fPVy;
+  Float_t               fPVz;
   G4ParticleDefinition* fPPDef;
   Int_t                 fPpdg;
   G4ThreeVector         fPdir;
+  G4ThreeVector         fPvtx;
 
   // Flux raw
   G4ParticleDefinition* fFluxpdef;

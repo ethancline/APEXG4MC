@@ -7,36 +7,37 @@
 #include "G4ThreeVector.hh"
 #include "globals.hh"
 
-#include "TFile.h"
-#include "TTree.h"
-#include "TString.h"
-#include "TLorentzVector.h"
-
 //---------------------------------------------------------------------------
 
+class DetectorConstruction;
 class PrimaryGeneratorMessenger;
 class G4ParticleGun;
 class G4GeneralParticleSource;
 class G4Event;
 
-enum { EPGA_GPS, EPGA_ROOT};
+enum { EPGA_GPS, EPGA_APEX};
 
 //---------------------------------------------------------------------------
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-  PrimaryGeneratorAction();    
+  PrimaryGeneratorAction( DetectorConstruction* );    
   ~PrimaryGeneratorAction();
 
   void GeneratePrimaries (G4Event*);
-  void SetUpROOTInput    (TString filename);
-  void SetMode(G4int mode){ fMode = mode; }
-  void SetDumpBeam(G4int dump){ fDump = dump; }
 
-  G4int GetNEvents()                  { return static_cast<G4int>(fGenTree->GetEntries()); }
-  G4int GetMode()                     { return fMode; }
-  G4int GetDumpBeam()                 { return fDump; }
+  void SetMode(G4int mo)          { fMode       = mo; }
+  void SetBeamE(G4double eb)      { fBeamE      = eb; }
+  void SetRasterX(G4double rx)    { fRasterX    = rx; }
+  void SetRasterY(G4double ry)    { fRasterY    = ry; }
+  void SetThetaMin(G4double tm)   { fThMin      = tm; }
+  void SetThetaMax(G4double tx)   { fThMax      = tx; }
+  void SetPhiMin(G4double pm)     { fPhMin      = pm; }
+  void SetPhiMax(G4double px)     { fPhMax      = px; }
+  void SetDeltaRange(G4double dr) { fDeltaRange = dr; }
+
+  G4int         GetMode()             { return fMode; }
   G4ThreeVector GetVertex()           { return G4ThreeVector(fVx,  fVy,  fVz);  }
   G4ThreeVector GetDirection()        { return G4ThreeVector(fPxp, fPyp, fPzp); }
   G4double      GetEnergy()           { return fEp; }
@@ -46,28 +47,29 @@ public:
 private:
   PrimaryGeneratorMessenger* fGunMessenger;
 
+  DetectorConstruction*      fDetector;
   G4ParticleGun*             fParticleGun;    
   G4GeneralParticleSource*   fParticleSource;
-  G4ParticleTable*           fParticleTable;
-  G4IonTable*                fIonTable; 
   G4ParticleDefinition*      fPDefinition;
   G4int                      fMode;   
-  G4int                      fDump;   
   
-  TFile*                     fGenFile;    
-  TTree*                     fGenTree;  
-  Int_t                      fNGenBranches;   
-  Int_t                      fNevent;
-  Int_t                      fPDG;
-  Float_t                    fVx;
-  Float_t                    fVy;
-  Float_t                    fVz;
-  Float_t                    fPxp;
-  Float_t                    fPyp;
-  Float_t                    fPzp;
-  Float_t                    fEp;
-  Float_t                    fTp;
+  G4double                   fVx;
+  G4double                   fVy;
+  G4double                   fVz;
+  G4double                   fPxp;
+  G4double                   fPyp;
+  G4double                   fPzp;
+  G4double                   fEp;
+  G4double                   fTp;
 
+  G4double                   fBeamE;
+  G4double                   fRasterX;
+  G4double                   fRasterY;
+  G4double                   fThMin;
+  G4double                   fThMax;
+  G4double                   fPhMin;
+  G4double                   fPhMax;
+  G4double                   fDeltaRange;
 };
 #endif
 

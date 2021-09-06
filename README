@@ -6,6 +6,13 @@
 > cmake ../ (or cmake3 ../)
 > make -jX (X specifies number of cores to use)
 
+# Running the simulation in visualisation mode
+./APEXG4MC
+> then in the gui, /control/execute macros/vis_apex.mac
+
+# Running the simulation in batch mode
+./APEXG4MC macros/batch_apex.mac
+
 # Detector options (in macros/DetectorSetup.mac)
   /APEXG4MC/detector/HRSAngle 12.5
   Set the HRS angle in degrees.
@@ -47,11 +54,33 @@
   Set the full name and path of the output file.
 
 # Generator options (in main control macro)
-  /APEXG4MC/generator/Mode 0
-  Set the mode of the generator (0 for GPS or 1 for ROOT tree).
+  /APEXG4MC/generator/Mode 1
+  Set the mode of the generator (0 for GPS or 1 for APEX).
 
-  /APEXG4MC/generator/InputFile
-  Set the full name and path of the input ROOT tree (if Mode = 1).
+  /APEXG4MC/generator/BeamEnergy 2.2
+  Set the beam energy GeV.
+
+  /APEXG4MC/generator/RasterX 2.0
+  Set the beam x raster in mm.
+
+  /APEXG4MC/generator/RasterY 2.0
+  Set the beam y raster in mm.
+
+  /APEXG4MC/generator/ThMin 2.0
+  Set the minimum polar angle for the electron in degrees.
+
+  /APEXG4MC/generator/ThMax 8.0
+  Set the maximum polar angle for the electron in degrees.
+
+  /APEXG4MC/generator/PhMin -5.0
+  Set the minimum azimuthal angle for the electron in degrees.
+
+  /APEXG4MC/generator/PhMax 5.0
+  Set the maximum azimuthal angle for the electron in degrees.
+
+  /APEXG4MC/generator/DeltaRange 0.2
+  Set the generated range in delta (absolute).
+
 
 
 
