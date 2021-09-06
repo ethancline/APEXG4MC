@@ -29,20 +29,23 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 
   FluxSD* fluxSD = (FluxSD*)detector->GetFluxSD();
   G4Track* track = aStep->GetTrack();
-  
-  if( prePoint->GetTouchableHandle()->GetVolume()->GetLogicalVolume() == detector->GetBlockerVol() )
-    track->SetTrackStatus(fStopAndKill);
-  
-  else {
-    for(int i=0; i<=detector->GetNoSD(); i++) {
-      
-      if ( prePoint->GetTouchableHandle()->GetVolume() != detector->GetDetVol(i) &&
-	   endPoint->GetTouchableHandle()->GetVolume() == detector->GetDetVol(i) ) {
-	if(fluxSD) 
-	  fluxSD->ProcessHits_constStep(aStep,NULL);
-      }
+
+  // Kill tracks inside blocking volumes
+  for(int i=0; i<=detector->GetNoBlock(); i++) {
+    if( prePoint->GetTouchableHandle()->GetVolume()->GetLogicalVolume() == detector->GetBlockerVol(i) )
+      track->SetTrackStatus(fStopAndKill);
+  }
+
+  // Trigger sensitive detectors
+  for(int i=0; i<=detector->GetNoSD(); i++) {
+    
+    if ( prePoint->GetTouchableHandle()->GetVolume() != detector->GetDetVol(i) &&
+	 endPoint->GetTouchableHandle()->GetVolume() == detector->GetDetVol(i) ) {
+      if(fluxSD) 
+	fluxSD->ProcessHits_constStep(aStep,NULL);
     }
   }
+
 }
 
 //---------------------------------------------------------------------------
