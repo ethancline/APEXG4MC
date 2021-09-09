@@ -59,6 +59,7 @@ DetectorConstruction::DetectorConstruction()
   fFieldMapFile = "Septa-JB_map.table"; // new septum geometry but not latest map
   fSieveOn      = false;
   fSieveAngle   = 5 *deg; // 5.81 degrees?
+  fSieveReal    = false;
   fTarget       = "ProdW";
   
   G4UImanager* UI = G4UImanager::GetUIpointer();
@@ -469,6 +470,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Septum (from original APEX G4)
   //--------------------------------------------------------------------------- 
 
+  double tolerance      = 0.5 *mm; // DJH: avoid overlap
+  
   double y_en           = 2.44*inch;
   double y_ex           = 4.7 *inch;
   double zlength        = 173.939*cm;
@@ -496,7 +499,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   double xmin_sep_en2   = xmin_sep_ex1;
   double xmax_sep_en2   = xmax_sep_ex1;
-  double z_sept_en_min2 = z_sept_ex_min1;
+  double z_sept_en_min2 = z_sept_ex_min1; 
   double z_sept_en_max2 = z_sept_ex_max1;
 
   double xmin_sep_ex2   = xmin_sep_en2 + length_min_2 * sin(ang_en_min_2);
@@ -518,29 +521,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4double  pDz_2       = 0.25*inch/2.;
   
   //---------------------------------LEFT SEPTUM HALF----------------------------------------------
-  //LHS Back Right Vertices
-  vector<G4TwoVector> vertices_en1_min;
-  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1, -1.0*ymin_sep_en1) );
-  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1,  1.0*ymin_sep_en1) );
-  vertices_en1_min.push_back( G4TwoVector(   length_min_1,  1.0*ymin_sep_ex1) );
-  vertices_en1_min.push_back( G4TwoVector(   length_min_1, -1.0*ymin_sep_ex1) );
-  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1, -1.0*ymin_sep_en1) );
-  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1,  1.0*ymin_sep_en1) );
-  vertices_en1_min.push_back( G4TwoVector(   length_min_1,  1.0*ymin_sep_ex1) );
-  vertices_en1_min.push_back( G4TwoVector(   length_min_1, -1.0*ymin_sep_ex1) );
- 
 
-  //LHS Back Right Trap
-  G4VSolid* testTrap_en1_min = new G4GenericTrap("testTrap_en1_min", pDz_1, vertices_en1_min);
-  G4LogicalVolume* trrap_en1_min = new G4LogicalVolume(testTrap_en1_min, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en1_min",0,0,LarmStepLimits);
-  trrap_en1_min->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
-  G4RotationMatrix *pRotY90deg_en1_min=new G4RotationMatrix();
-  pRotY90deg_en1_min->rotateY(90.*deg-ang_en_min_1);
-  new G4PVPlacement(pRotY90deg_en1_min,G4ThreeVector(pDz_1+xmin_sep_en1-0.02*mm,0,z_sept_en_min1), 
-		    trrap_en1_min,"trrap_en1_min",expHall_log,0,++nonSDcounter);
+  //--------------------------------------------------------------------------- 
+  // upstream box
+  //--------------------------------------------------------------------------- 
 
-
-  //LHS Back Left Vertices
+  fNBlock = 0;
+  
+  // upstream lefthand upright
   vector<G4TwoVector> vertices_en1_max;
   vertices_en1_max.push_back( G4TwoVector(0.*length_max_1, -1.0*ymax_sep_en1) );
   vertices_en1_max.push_back( G4TwoVector(0.*length_max_1,  1.0*ymax_sep_en1) );
@@ -551,62 +539,37 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   vertices_en1_max.push_back( G4TwoVector(   length_max_1,  1.0*ymax_sep_ex1) );
   vertices_en1_max.push_back( G4TwoVector(   length_max_1, -1.0*ymax_sep_ex1) );
 
-  //LHS Back Left Trap
   G4VSolid* testTrap_en1_max = new G4GenericTrap("testTrap_en1_max", pDz_1, vertices_en1_max);
-  G4LogicalVolume* trrap_en1_max = new G4LogicalVolume(testTrap_en1_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en1_max",0,0,LarmStepLimits);
-  trrap_en1_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_en1_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en1_max",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotY90deg_en1_max=new G4RotationMatrix();
   pRotY90deg_en1_max->rotateY(90.*deg-ang_en_min_1);
+
   new G4PVPlacement(pRotY90deg_en1_max,G4ThreeVector(pDz_1+xmax_sep_en1+0.02*mm,0,z_sept_en_max1), 
-		    trrap_en1_max,"trrap_en1_max",expHall_log,0,++nonSDcounter);
+  		    fBlockerLog[fNBlock],"trrap_en1_max",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+    
+  // upstream righthand upright
+  vector<G4TwoVector> vertices_en1_min;
+  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1, -1.0*ymin_sep_en1) );
+  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1,  1.0*ymin_sep_en1) );
+  vertices_en1_min.push_back( G4TwoVector(   length_min_1,  1.0*ymin_sep_ex1) );
+  vertices_en1_min.push_back( G4TwoVector(   length_min_1, -1.0*ymin_sep_ex1) );
+  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1, -1.0*ymin_sep_en1) );
+  vertices_en1_min.push_back( G4TwoVector(0.*length_min_1,  1.0*ymin_sep_en1) );
+  vertices_en1_min.push_back( G4TwoVector(   length_min_1,  1.0*ymin_sep_ex1) );
+  vertices_en1_min.push_back( G4TwoVector(   length_min_1, -1.0*ymin_sep_ex1) );
 
+  G4VSolid* testTrap_en1_min = new G4GenericTrap("testTrap_en1_min", pDz_1, vertices_en1_min);
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_en1_min, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en1_min",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  G4RotationMatrix *pRotY90deg_en1_min=new G4RotationMatrix();
+  pRotY90deg_en1_min->rotateY(90.*deg-ang_en_min_1);
+  new G4PVPlacement(pRotY90deg_en1_min,G4ThreeVector(-pDz_1+xmin_sep_en1-0.02*mm,0,z_sept_en_min1), 
+  		    fBlockerLog[fNBlock],"trrap_en1_min",expHall_log,0,++nonSDcounter);
+  fNBlock++;
 
-  //LHS Front Left Vertices
-  vector<G4TwoVector> vertices_en2_max;
-  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
-  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
-  vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
-  vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
-  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
-  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
-  vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
-  vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
-
-
-  //LHS Front Left Trap
-  G4VSolid* testTrap_en2_max = new G4GenericTrap("testTrap_en2_max", pDz_1, vertices_en2_max);
-  G4LogicalVolume* trrap_en2_max = new G4LogicalVolume(testTrap_en2_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_max",0,0,LarmStepLimits);
-  trrap_en2_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
-  G4RotationMatrix *pRotY90deg_en2_max=new G4RotationMatrix();
-  pRotY90deg_en2_max->rotateY(90.*deg-ang_en_max_2);
-  new G4PVPlacement(pRotY90deg_en2_max,G4ThreeVector(pDz_1+xmax_sep_en2+0.02*mm,0,z_sept_en_max2), 
-		    trrap_en2_max,"trrap_en2_max",expHall_log,0,++nonSDcounter);
-
-
-  //LHS Front Right Vertices
-  vector<G4TwoVector> vertices_en2_min;
-  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
-  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
-  vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
-  vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
-  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
-  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
-  vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
-  vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
-
-
-  //LHS Front Right Trap
-  G4VSolid* testTrap_en2_min = new G4GenericTrap("testTrap_en2_min", pDz_1, vertices_en2_min);
-  G4LogicalVolume* trrap_en2_min = new G4LogicalVolume(testTrap_en2_min, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_min",0,0,LarmStepLimits);
-  trrap_en2_min->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
-  G4RotationMatrix *pRotY90deg_en2_min=new G4RotationMatrix();
-  pRotY90deg_en2_min->rotateY(90.*deg-ang_en_min_2);
-  new G4PVPlacement(pRotY90deg_en2_min,G4ThreeVector(-1.*pDz_1+xmin_sep_en2-0.02*mm,0,z_sept_en_min2), 
-		    trrap_en2_min,"trrap_en2_min",expHall_log,0,++nonSDcounter);
-
-
-
-  //LHS Back Top and Bottom Vertices
+  // upstream top
   vector<G4TwoVector> vertices_cov1_up;
   vertices_cov1_up.push_back( G4TwoVector(xmin_sep_en1-1.95*pDz_1, z_sept_en_min1) );
   vertices_cov1_up.push_back( G4TwoVector(xmax_sep_en1+1.95*pDz_1, z_sept_en_max1) );
@@ -617,30 +580,73 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   vertices_cov1_up.push_back( G4TwoVector(xmax_sep_ex1+1.95*pDz_1, z_sept_ex_max1) );
   vertices_cov1_up.push_back( G4TwoVector(xmin_sep_ex1-1.95*pDz_1, z_sept_ex_min1) );
 
-
-  //LHS Back Top Trap
   G4VSolid* testTrap_cov_1_up = new G4GenericTrap("testTrap_cov_1_up", pDz_2, vertices_cov1_up);
-  G4LogicalVolume* trrap_cov_1_up = new G4LogicalVolume(testTrap_cov_1_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_up",0,0,LarmStepLimits);
-  trrap_cov_1_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_cov_1_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_up",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_1_up=new G4RotationMatrix();
   pRotX90deg_cov_1_up->rotateX(-90.*deg+atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(pRotX90deg_cov_1_up,G4ThreeVector(0,0.02*mm+ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.), 
-		    trrap_cov_1_up,"cov1_up",expHall_log,0,++nonSDcounter);
-
-
-
-  //LHS Back Bottom Trap
+  new G4PVPlacement(pRotX90deg_cov_1_up,G4ThreeVector(0, 0.02*mm+ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1) + tolerance, 0.),  
+  		    fBlockerLog[fNBlock],"cov1_up",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // upstream bottom
   G4VSolid* testTrap_cov_1_bot = testTrap_cov_1_up;
-  G4LogicalVolume* trrap_cov_1_bot = new G4LogicalVolume(testTrap_cov_1_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_bot",0,0,LarmStepLimits);
-  trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_cov_1_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_bot",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_1_bot=new G4RotationMatrix();
   pRotX90deg_cov_1_bot->rotateX(-90.*deg-atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(pRotX90deg_cov_1_bot,G4ThreeVector(0,-0.02*mm-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.), 
-		    trrap_cov_1_bot,"cov1_bot",expHall_log,0,++nonSDcounter);
-  trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  new G4PVPlacement(pRotX90deg_cov_1_bot,G4ThreeVector(0,-0.02*mm-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)-tolerance,0.), 
+  		    fBlockerLog[fNBlock],"cov1_bot",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  //--------------------------------------------------------------------------- 
+  // downstream box
+  //--------------------------------------------------------------------------- 
 
+  z_sept_en_min2 += tolerance;
+  z_sept_en_max2 += tolerance;
+  
+  // downstream lefthand upright
+  vector<G4TwoVector> vertices_en2_max;
+  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
+  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
+  vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
+  vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
+  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
+  vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
+  vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
+  vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
 
-  //LHS Front Top and Bottom Vertices
+  G4VSolid* testTrap_en2_max = new G4GenericTrap("testTrap_en2_max", pDz_1, vertices_en2_max);
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_en2_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_max",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  G4RotationMatrix *pRotY90deg_en2_max=new G4RotationMatrix();
+  pRotY90deg_en2_max->rotateY(90.*deg-ang_en_max_2);
+  new G4PVPlacement(pRotY90deg_en2_max,G4ThreeVector(pDz_1+xmax_sep_en2+0.02*mm,0, z_sept_en_max2 ), 
+  		    fBlockerLog[fNBlock],"trrap_en2_max",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // downstream righthand upright
+  vector<G4TwoVector> vertices_en2_min;
+  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
+  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
+  vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
+  vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
+  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
+  vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
+  vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
+  vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
+
+  G4VSolid* testTrap_en2_min = new G4GenericTrap("testTrap_en2_min", pDz_1, vertices_en2_min);
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_en2_min, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_min",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  G4RotationMatrix *pRotY90deg_en2_min=new G4RotationMatrix();
+  pRotY90deg_en2_min->rotateY(90.*deg-ang_en_min_2);
+  new G4PVPlacement(pRotY90deg_en2_min,G4ThreeVector(-1.*pDz_1+xmin_sep_en2-0.02*mm,0,z_sept_en_min2), 
+  		    fBlockerLog[fNBlock],"trrap_en2_min",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // downstream top
   vector<G4TwoVector> vertices_cov2_up;
   vertices_cov2_up.push_back( G4TwoVector(xmin_sep_en2-1.95*pDz_1, z_sept_en_min2) );
   vertices_cov2_up.push_back( G4TwoVector(xmax_sep_en2+1.95*pDz_1, z_sept_en_max2) );
@@ -651,28 +657,32 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   vertices_cov2_up.push_back( G4TwoVector(xmax_sep_ex2+1.95*pDz_1, z_sept_ex_max2) );
   vertices_cov2_up.push_back( G4TwoVector(xmin_sep_ex2-1.95*pDz_1, z_sept_ex_min2) );
 
-
-  //LHS Front Top Trap
   G4VSolid* testTrap_cov_2_up = new G4GenericTrap("testTrap_cov_2_up", pDz_2, vertices_cov2_up);
-  G4LogicalVolume* trrap_cov_2_up = new G4LogicalVolume(testTrap_cov_2_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_up",0,0,LarmStepLimits);
-  trrap_cov_2_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_cov_2_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_up",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_2_up=new G4RotationMatrix();
   pRotX90deg_cov_2_up->rotateX(-90.*deg+atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(pRotX90deg_cov_2_up,G4ThreeVector(0, 0.02*mm+ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.), 
-		    trrap_cov_2_up,"cov2_up",expHall_log,0,++nonSDcounter);
-
+  new G4PVPlacement(pRotX90deg_cov_2_up,G4ThreeVector(0, 0.02*mm+ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2) + tolerance,0.), 
+  		    fBlockerLog[fNBlock],"cov2_up",expHall_log,0,++nonSDcounter);
+  fNBlock++;
   
-  //RHS Front Bottom Trap
+  // downstream top
   G4VSolid* testTrap_cov_2_bot = testTrap_cov_2_up;
-  G4LogicalVolume* trrap_cov_2_bot = new G4LogicalVolume(testTrap_cov_2_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_bot",0,0,LarmStepLimits);
-  trrap_cov_2_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(testTrap_cov_2_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_bot",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *pRotX90deg_cov_2_bot=new G4RotationMatrix();
   pRotX90deg_cov_2_bot->rotateX(-90.*deg-atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(pRotX90deg_cov_2_bot,G4ThreeVector(0,-0.02*mm-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.), 
-		    trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
-
+  new G4PVPlacement(pRotX90deg_cov_2_bot,G4ThreeVector(0,-0.02*mm-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2) - tolerance,0.), 
+  		    fBlockerLog[fNBlock],"cov2_bot",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
   //----------------------------------RIGHT SEPTUM HALF----------------------------------------
-  //RHS Back Left Vertices
+
+  //--------------------------------------------------------------------------- 
+  // upstream box
+  //---------------------------------------------------------------------------
+
+  // upstream righthand upright
   vector<G4TwoVector> r_vertices_en1_min;
   r_vertices_en1_min.push_back( G4TwoVector(0.*length_min_1, -1.0*ymin_sep_en1) );
   r_vertices_en1_min.push_back( G4TwoVector(0.*length_min_1,  1.0*ymin_sep_en1) );
@@ -683,18 +693,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_vertices_en1_min.push_back( G4TwoVector(   length_min_1,  1.0*ymin_sep_ex1) );
   r_vertices_en1_min.push_back( G4TwoVector(   length_min_1, -1.0*ymin_sep_ex1) );
 
-
-  //RHS Back Left Trap
   G4VSolid* r_testTrap = new G4GenericTrap("vac Box 1", pDz_1, r_vertices_en1_min);
-  G4LogicalVolume* r_trrap = new G4LogicalVolume(r_testTrap,fNistManager->FindOrBuildMaterial("G4_W"),"vac Box 1",0,0,LarmStepLimits);
-  r_trrap->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap,fNistManager->FindOrBuildMaterial("G4_W"),"vac Box 1",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotY90deg_en1_min=new G4RotationMatrix();
   r_pRotY90deg_en1_min->rotateY(90*deg+ang_en_max_1);
   new G4PVPlacement(r_pRotY90deg_en1_min,G4ThreeVector(1.*pDz_1-xmin_sep_en1,0,z_sept_en_min1), 
-		    r_trrap,"vac Box en1 min",expHall_log,0,++nonSDcounter);
-
-
-  //RHS Back Right Vertices
+  		    fBlockerLog[fNBlock],"vac Box en1 min",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+    
+  // upstream lefthand upright
   vector<G4TwoVector> r_vertices_en1_max;
   r_vertices_en1_max.push_back( G4TwoVector(0.*length_max_1, -1.0*ymax_sep_en1) );
   r_vertices_en1_max.push_back( G4TwoVector(0.*length_max_1,  1.0*ymax_sep_en1) );
@@ -705,62 +713,16 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_vertices_en1_max.push_back( G4TwoVector(   length_max_1,  1.0*ymax_sep_ex1) );
   r_vertices_en1_max.push_back( G4TwoVector(   length_max_1, -1.0*ymax_sep_ex1) );
 
-
-  //RHS Back Right Trap
   G4VSolid* r_testTrap_en1_max = new G4GenericTrap("testTrap_en1_max", pDz_1, r_vertices_en1_max);
-  G4LogicalVolume* r_trrap_en1_max = new G4LogicalVolume(r_testTrap_en1_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en1_max",0,0,LarmStepLimits);
-  r_trrap_en1_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap_en1_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en1_max",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotY90deg_en1_max=new G4RotationMatrix();
   r_pRotY90deg_en1_max->rotateY(90.*deg+ang_en_min_1);
   new G4PVPlacement(r_pRotY90deg_en1_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en1),0,z_sept_en_max1),
-		    r_trrap_en1_max,"trrap_en1_max",expHall_log,0,++nonSDcounter);
-
-
-  //RHS Front Right Vertices
-  vector<G4TwoVector> r_vertices_en2_max;
-  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
-  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
-  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
-  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
-  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
-  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
-  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
-  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
-
-
-  //RHS Font Right Trap
-  G4VSolid* r_testTrap_en2_max = new G4GenericTrap("testTrap_en2_max", pDz_1, vertices_en2_max);
-  G4LogicalVolume* r_trrap_en2_max = new G4LogicalVolume(r_testTrap_en2_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_max",0,0,LarmStepLimits);
-  r_trrap_en2_max->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
-  G4RotationMatrix *r_pRotY90deg_en2_max=new G4RotationMatrix();
-  r_pRotY90deg_en2_max->rotateY(90.*deg+ang_en_max_2);
-  new G4PVPlacement(r_pRotY90deg_en2_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en2),0,z_sept_en_max2),
-		    r_trrap_en2_max,"trrap_en2_max",expHall_log,0,++nonSDcounter);
-
-
-  //RHS Front Left Trap Vertices
-  vector<G4TwoVector> r_vertices_en2_min;
-  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
-  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
-  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
-  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
-  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
-  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
-  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
-  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
-
-
-  //RHS Front Left Trap
-  G4VSolid* r_testTrap_en2_min = new G4GenericTrap("testTrap_en2_min", pDz_1, vertices_en2_min);
-  G4LogicalVolume* r_trrap_en2_min = new G4LogicalVolume(r_testTrap_en2_min, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_min",0,0,LarmStepLimits);
-  r_trrap_en2_min->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
-  G4RotationMatrix *r_pRotY90deg_en2_min=new G4RotationMatrix();
-  r_pRotY90deg_en2_min->rotateY(90.*deg+ang_en_min_2);
-  new G4PVPlacement(r_pRotY90deg_en2_min,G4ThreeVector(pDz_1-xmin_sep_en2,0,z_sept_en_min2),
-		    r_trrap_en2_min,"trrap_en2_min",expHall_log,0,++nonSDcounter);
-
-
-  //RHS Back Top and Bottom Vertices
+  		    fBlockerLog[fNBlock],"trrap_en1_max",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // upstream top
   vector<G4TwoVector> r_vertices_cov1_up;
   r_vertices_cov1_up.push_back( G4TwoVector(-1.*(xmin_sep_en1-1.95*pDz_1), z_sept_en_min1) );
   r_vertices_cov1_up.push_back( G4TwoVector(-1.*(xmax_sep_en1+1.95*pDz_1), z_sept_en_max1) );
@@ -771,29 +733,70 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_vertices_cov1_up.push_back( G4TwoVector(-1.*(xmax_sep_ex1+1.95*pDz_1), z_sept_ex_max1) );
   r_vertices_cov1_up.push_back( G4TwoVector(-1.*(xmin_sep_ex1-1.95*pDz_1), z_sept_ex_min1) );
 
-
-  //RHS Back Top Trap
   G4VSolid* r_testTrap_cov_1_up = new G4GenericTrap("testTrap_cov_1_up", pDz_2, r_vertices_cov1_up);
-  G4LogicalVolume* r_trrap_cov_1_up = new G4LogicalVolume(r_testTrap_cov_1_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_up",0,0,LarmStepLimits);
-  r_trrap_cov_1_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap_cov_1_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_up",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_1_up=new G4RotationMatrix();
   r_pRotX90deg_cov_1_up->rotateX(-90.*deg+atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(r_pRotX90deg_cov_1_up,G4ThreeVector(0,ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.),
-		    r_trrap_cov_1_up,"cov1_up",expHall_log,0,++nonSDcounter);
-
+  new G4PVPlacement(r_pRotX90deg_cov_1_up,G4ThreeVector(0,ymax_sep_en1+pDz_2+fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1) + tolerance,0.),
+  		    fBlockerLog[fNBlock],"cov1_up",expHall_log,0,++nonSDcounter);
+  fNBlock++;
   
-  //RHS Back Bottom Trap
+  // upstream bottom
   G4VSolid* r_testTrap_cov_1_bot = r_testTrap_cov_1_up;
-  G4LogicalVolume* r_trrap_cov_1_bot = new G4LogicalVolume(r_testTrap_cov_1_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_bot",0,0,LarmStepLimits);
-  r_trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap_cov_1_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_1_bot",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_1_bot=new G4RotationMatrix();
   r_pRotX90deg_cov_1_bot->rotateX(-90.*deg-atan((ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1)));
-  new G4PVPlacement(r_pRotX90deg_cov_1_bot,G4ThreeVector(0,-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1),0.),
-		    r_trrap_cov_1_bot,"cov1_bot",expHall_log,0,++nonSDcounter);
-  r_trrap_cov_1_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  new G4PVPlacement(r_pRotX90deg_cov_1_bot,G4ThreeVector(0,-1.*ymax_sep_en1-pDz_2-fabs(z_sept_en_min1)*(ymax_sep_ex1-ymax_sep_en1)/(z_sept_ex_max1-z_sept_en_max1) - tolerance,0.),
+  		    fBlockerLog[fNBlock],"cov1_bot",expHall_log,0,++nonSDcounter);
+  fNBlock++;
 
+  //--------------------------------------------------------------------------- 
+  // downstream box
+  //---------------------------------------------------------------------------
 
-  //RHS Front Top and Bottom Vertices
+  // downstream righthand upright
+  vector<G4TwoVector> r_vertices_en2_max;
+  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
+  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
+  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
+  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
+  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2, -1.0*ymax_sep_en2) );
+  r_vertices_en2_max.push_back( G4TwoVector(0.*length_max_2,  1.0*ymax_sep_en2) );
+  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2,  1.0*ymax_sep_ex2) );
+  r_vertices_en2_max.push_back( G4TwoVector(   length_max_2, -1.0*ymax_sep_ex2) );
+
+  G4VSolid* r_testTrap_en2_max = new G4GenericTrap("testTrap_en2_max", pDz_1, vertices_en2_max);
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap_en2_max, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_max",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  G4RotationMatrix *r_pRotY90deg_en2_max=new G4RotationMatrix();
+  r_pRotY90deg_en2_max->rotateY(90.*deg+ang_en_max_2);
+  new G4PVPlacement(r_pRotY90deg_en2_max,G4ThreeVector(-1.*(pDz_1+xmax_sep_en2),0,z_sept_en_max2),
+  		    fBlockerLog[fNBlock],"trrap_en2_max",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // downstream lefthand upright
+  vector<G4TwoVector> r_vertices_en2_min;
+  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
+  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
+  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
+  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
+  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2, -1.0*ymin_sep_en2) );
+  r_vertices_en2_min.push_back( G4TwoVector(0.*length_min_2,  1.0*ymin_sep_en2) );
+  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2,  1.0*ymin_sep_ex2) );
+  r_vertices_en2_min.push_back( G4TwoVector(   length_min_2, -1.0*ymin_sep_ex2) );
+
+  G4VSolid* r_testTrap_en2_min = new G4GenericTrap("testTrap_en2_min", pDz_1, vertices_en2_min);
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap_en2_min, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_en2_min",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  G4RotationMatrix *r_pRotY90deg_en2_min=new G4RotationMatrix();
+  r_pRotY90deg_en2_min->rotateY(90.*deg+ang_en_min_2);
+  new G4PVPlacement(r_pRotY90deg_en2_min,G4ThreeVector(pDz_1-xmin_sep_en2,0,z_sept_en_min2),
+  		    fBlockerLog[fNBlock],"trrap_en2_min",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // downstream top
   vector<G4TwoVector> r_vertices_cov2_up;
   r_vertices_cov2_up.push_back( G4TwoVector(-1.*(xmin_sep_en2-1.95*pDz_1), z_sept_en_min2) );
   r_vertices_cov2_up.push_back( G4TwoVector(-1.*(xmax_sep_en2+1.95*pDz_1), z_sept_en_max2) );
@@ -804,25 +807,25 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   r_vertices_cov2_up.push_back( G4TwoVector(-1.*(xmax_sep_ex2+1.95*pDz_1), z_sept_ex_max2) );
   r_vertices_cov2_up.push_back( G4TwoVector(-1.*(xmin_sep_ex2-1.95*pDz_1), z_sept_ex_min2) );
 
-
-  //RHS Front Top Trap
   G4VSolid* r_testTrap_cov_2_up = new G4GenericTrap("testTrap_cov_2_up", pDz_2, r_vertices_cov2_up);
-  G4LogicalVolume* r_trrap_cov_2_up = new G4LogicalVolume(r_testTrap_cov_2_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_up",0,0,LarmStepLimits);
-  r_trrap_cov_2_up->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock] = new G4LogicalVolume(r_testTrap_cov_2_up, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_up",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_2_up=new G4RotationMatrix();
   r_pRotX90deg_cov_2_up->rotateX(-90.*deg+atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(r_pRotX90deg_cov_2_up,G4ThreeVector(0,     ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
-		    r_trrap_cov_2_up,"cov2_up",expHall_log,0,++nonSDcounter);
-
-
-  //RHS Front Bottom Trap
+  new G4PVPlacement(r_pRotX90deg_cov_2_up,G4ThreeVector(0,     ymin_sep_en2+pDz_2-fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2) + tolerance,0.),
+  		    fBlockerLog[fNBlock],"cov2_up",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+  
+  // downstream bottom
   G4VSolid* r_testTrap_cov_2_bot = r_testTrap_cov_2_up;
-  G4LogicalVolume* r_trrap_cov_2_bot = new G4LogicalVolume(r_testTrap_cov_2_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_bot",0,0,LarmStepLimits);
-  r_trrap_cov_2_bot->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
+  fBlockerLog[fNBlock]   = new G4LogicalVolume(r_testTrap_cov_2_bot, fNistManager->FindOrBuildMaterial("G4_W"),"trrap_cov_2_bot",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock]->SetVisAttributes((G4Colour(0.8, 0.8, 1.0)));
   G4RotationMatrix *r_pRotX90deg_cov_2_bot=new G4RotationMatrix();
   r_pRotX90deg_cov_2_bot->rotateX(-90.*deg-atan((ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2)));
-  new G4PVPlacement(r_pRotX90deg_cov_2_bot,G4ThreeVector(0,-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2),0.),
-		    r_trrap_cov_2_bot,"cov2_bot",expHall_log,0,++nonSDcounter);
+  new G4PVPlacement(r_pRotX90deg_cov_2_bot,G4ThreeVector(0,-1.*ymin_sep_en2-pDz_2+fabs(z_sept_en_min2)*(ymax_sep_ex2-ymax_sep_en2)/(z_sept_ex_max2-z_sept_en_max2) - tolerance,0.),
+  		    fBlockerLog[fNBlock],"cov2_bot",expHall_log,0,++nonSDcounter);
+  fNBlock++;
+
   
   //--------------------------------------------------------------------------- 
   // DJH: particles are getting to the Q1 detectors between the septum apertures
@@ -835,19 +838,22 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   
   G4VSolid* blocker = new G4Box("blocker", blocker_X/2.0, blocker_Y/2.0, blocker_Z/2.0);
 
-  fBlockerLog = new G4LogicalVolume(blocker,
-				    fNistManager->FindOrBuildMaterial("G4_W"),
-				    "blockerLogical",0,0,LarmStepLimits);
+  fBlockerLog[fNBlock] = new G4LogicalVolume(blocker,
+					     fNistManager->FindOrBuildMaterial("G4_W"),
+					     "blockerLogical",0,0,LarmStepLimits);
 
   new G4PVPlacement(0,G4ThreeVector(0., 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+2.5*cm),
-  		    fBlockerLog,"blockerPhys", expHall_log, false, ++nonSDcounter);
+  		    fBlockerLog[fNBlock],"blockerPhys", expHall_log, false, ++nonSDcounter);
 
   new G4PVPlacement(0,G4ThreeVector(xmax_sep_ex2+blocker_X/2.0+0.7*cm, 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+0.0*cm),
-  		    fBlockerLog,"blockerPhys", expHall_log, false, ++nonSDcounter);
+  		    fBlockerLog[fNBlock],"blockerPhys", expHall_log, false, ++nonSDcounter);
 
-    new G4PVPlacement(0,G4ThreeVector(-xmax_sep_ex2-blocker_X/2.0-0.7*cm, 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+0.0*cm),
-  		    fBlockerLog,"blockerPhys", expHall_log, false, ++nonSDcounter);
+  new G4PVPlacement(0,G4ThreeVector(-xmax_sep_ex2-blocker_X/2.0-0.7*cm, 0.,  fDistTarPivot*cm+z_sept_en_max1+blocker_Z/2.0+0.0*cm),
+  		    fBlockerLog[fNBlock],"blockerPhys", expHall_log, false, ++nonSDcounter);
 
+  fBlockerLog[fNBlock]->SetVisAttributes(G4VisAttributes::Invisible);
+  fNBlock++;
+  
   //--------------------------------------------------------------------------- 
   // Create Sieve (from original APEX G4)
   //---------------------------------------------------------------------------
@@ -875,19 +881,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //the hole positions relative to the slit center 
   double pSieveSlitHolePosH[15]={0.295, 0.485, 0.675, 0.865, 1.055, 1.245, 1.435, 1.625, 1.815, 2.005, 2.195, 2.385, 2.575, 2.765, 2.955};
   double pSieveSlitHolePosV[9] = {0.285, 0.745, 1.205, 1.665, 2.125, 2.585, 3.045, 3.505, 3.965};
+
   for(int ii=0;ii<15;ii++)
-    {
-      pSieveSlitHolePosH[ii] = (pSieveSlitHolePosH[ii]-1.625)*inch;
-    }
+        pSieveSlitHolePosH[ii] = (pSieveSlitHolePosH[ii]-1.625)*inch;
+  
   for(int ii=0;ii<9;ii++)
-    {
       pSieveSlitHolePosV[ii] = (pSieveSlitHolePosV[ii]-2.125)*inch;
-    }
+  
 
   //now start to build box then subtract 63 holes 
   G4VSolid* sieveSlitWholeSolid      = new G4Box("sieveSlitWholeBox",pSieveSlitX/2.0,
   						 pSieveSlitY/2.0,pSieveSlitZ/2.0);
-
+  
   G4VSolid* sieveSlitHoleSolid       = new G4Tubs("sieveSlitHoleTubs",0,pSieveSlitHoleR,
   						  pSieveSlitHoldL/2.0,startphi,deltaphi); 
   
@@ -946,15 +951,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // }
 
   sieveSlitSolid->SetName("sieveSlitSolid");
-  
-  G4LogicalVolume* sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
-  							  fNistManager->FindOrBuildMaterial("G4_W"),
-  							  "sieveSlitLogical",0,0,LarmStepLimits);
 
   G4RotationMatrix *R_RotY90deg_sieve_slit=new G4RotationMatrix();
   R_RotY90deg_sieve_slit->rotateY(-fSieveAngle*deg);
   G4RotationMatrix *L_RotY90deg_sieve_slit=new G4RotationMatrix();
   L_RotY90deg_sieve_slit->rotateY(fSieveAngle*deg);
+
+  G4LogicalVolume* sieveSlitLogical;
+  
+  if( fSieveReal ) {
+    sieveSlitLogical = new G4LogicalVolume(sieveSlitSolid,
+					   fNistManager->FindOrBuildMaterial("G4_W"),
+					   "sieveSlitLogical",0,0,LarmStepLimits);
+  }
+  else {
+    fBlockerLog[fNBlock] = new G4LogicalVolume(sieveSlitSolid,
+					       fNistManager->FindOrBuildMaterial("G4_W"),
+					       "sieveSlitLogical",0,0,LarmStepLimits);
+
+    sieveSlitLogical = fBlockerLog[fNBlock];
+  }
 
   if( fSieveOn ) {
     new G4PVPlacement(R_RotY90deg_sieve_slit,G4ThreeVector(sieve_pos_x, 0, sieve_pos_z),

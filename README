@@ -38,6 +38,9 @@
   /APEXG4MC/detector/SieveAngle 5.0
   Set the sieve slit angle in degrees.
 
+  /APEXG4MC/detector/SieveReal false
+  If this is set to true particles will be tracked in the sieve slit volume (slow).
+
   /APEXG4MC/detector/Target ProdW
   Set the target type (ProdW, ProdC, Optics1, Optics2, Optics3, VWires or HWires).
 

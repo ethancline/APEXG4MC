@@ -35,6 +35,9 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* Detect)
 
   fSieveOnCmd   = new G4UIcmdWithABool("/APEXG4MC/detector/SieveOn",this);
   fSieveOnCmd->SetGuidance("Set the sieve slit in or out (true or false)");
+  
+  fSieveRealCmd   = new G4UIcmdWithABool("/APEXG4MC/detector/SieveReal",this);
+  fSieveRealCmd->SetGuidance("If this is set to true particles will be tracked in the sieve slit volume (slow).");
 
   fSieveAngleCmd  = new G4UIcmdWithADouble("/APEXG4MC/detector/SieveAngle",this);
   fSieveAngleCmd->SetGuidance("Set the sieve slit angle in degrees.");
@@ -60,6 +63,7 @@ DetectorMessenger::~DetectorMessenger()
   delete fSepScaleCmd;
   delete fFieldMapCmd;
   delete fSieveOnCmd;
+  delete fSieveRealCmd;
   delete fSieveAngleCmd;
   delete fTargetCmd;
 
@@ -86,7 +90,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
     fDetector->SetSeptFieldMap(newValue.data());
   else if (command == fSieveOnCmd)
     fDetector->SetSieveOn(fSieveOnCmd->GetNewBoolValue(newValue));
-    else if(command == fTargetCmd)
+  else if (command == fSieveRealCmd)
+    fDetector->SetSieveReal(fSieveRealCmd->GetNewBoolValue(newValue));
+  else if(command == fTargetCmd)
     fDetector->SetTarget(newValue.data());
   else if (command == fSieveAngleCmd)
     fDetector->SetSieveAngle(fSieveAngleCmd->GetNewDoubleValue(newValue));
