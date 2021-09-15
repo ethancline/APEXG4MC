@@ -7,10 +7,20 @@
 /run/initialize
 
 ##################################################################
-# Set output options
+# Set generator and output options
 ##################################################################
 
-/APEXG4MC/analysis/setOutputFile vis_test.root
+/APEXG4MC/generator/Mode 1
+/APEXG4MC/generator/BeamEnergy 2.2
+/APEXG4MC/generator/RasterX 2.0
+/APEXG4MC/generator/RasterY 2.0
+/APEXG4MC/generator/ThMin 2.0
+/APEXG4MC/generator/ThMax 8.0
+/APEXG4MC/generator/PhMin -5.0
+/APEXG4MC/generator/PhMax 5.0
+/APEXG4MC/generator/DeltaRange 0.2
+
+/APEXG4MC/analysis/setOutputFile vis_apex.root
 
 ##################################################################
 # Set visualisation options
@@ -18,7 +28,6 @@
 
 /vis/scene/create
 /vis/open OGLS 800x800-0+0
-#/vis/viwer/set/zoom/2.5
 /vis/viewer/set/viewpointThetaPhi 90 91
 /vis/scene/add/trajectories
 /vis/scene/add/magneticField
@@ -28,27 +37,3 @@
 
 ##################################################################
 
-/gps/source/clear
-/gps/source/multiplevertex true
-
-/gps/source/add 1
-/gps/particle e-
-/gps/ang/type beam2d
-/gps/ang/sigma_x 1.5 deg
-/gps/ang/sigma_y 0.5 deg
-/gps/ang/rot1 -11.4795 0 1
-/gps/energy 1 GeV
-/gps/pos/type Point
-/gps/pos/centre 0. 0. -105.291 cm
-
-/gps/source/add 2
-/gps/particle e+
-/gps/ang/type beam2d
-/gps/ang/sigma_x 1.5 deg
-/gps/ang/sigma_y 0.5 deg
-/gps/ang/rot1 -11.4795 0 -1
-/gps/energy 1 GeV
-/gps/pos/type Point
-/gps/pos/centre 0. 0. -105.289 cm
-
-#/run/beamOn 1

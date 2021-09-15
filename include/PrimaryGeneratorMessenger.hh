@@ -4,10 +4,14 @@
 #include "G4UImessenger.hh"
 #include "globals.hh"
 
+//---------------------------------------------------------------------------
+
 class PrimaryGeneratorAction;
 class G4UIdirectory;
-class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
+class G4UIcmdWithADouble;
+
+//---------------------------------------------------------------------------
 
 class PrimaryGeneratorMessenger: public G4UImessenger
 {
@@ -21,10 +25,17 @@ class PrimaryGeneratorMessenger: public G4UImessenger
   PrimaryGeneratorAction* fAction;
   G4UIdirectory*          fGunDir;
 
-  G4UIcmdWithAString*     fSetInputCmd;
   G4UIcmdWithAnInteger*   fSetModeCmd;
-  G4UIcmdWithAnInteger*   fSetSeedCmd;
+  G4UIcmdWithADouble*     fBeamECmd;
+  G4UIcmdWithADouble*     fRasterXCmd;
+  G4UIcmdWithADouble*     fRasterYCmd;
+  G4UIcmdWithADouble*     fThMinCmd;
+  G4UIcmdWithADouble*     fThMaxCmd;
+  G4UIcmdWithADouble*     fPhMinCmd;
+  G4UIcmdWithADouble*     fPhMaxCmd;
+  G4UIcmdWithADouble*     fDeltaCmd;
 };
 
 #endif
 
+//---------------------------------------------------------------------------

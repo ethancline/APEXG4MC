@@ -50,6 +50,9 @@ void AnalysisManager::InitOutput()
   fROOTtree->Branch("Prim_E",      &fPEne,   "Prim_E/F"      );
   fROOTtree->Branch("Prim_Th",     &fPth,    "Prim_Th/F"     );
   fROOTtree->Branch("Prim_Ph",     &fPph,    "Prim_Ph/F"     );
+  fROOTtree->Branch("Prim_x",      &fPVx,    "Prim_x/F"     );
+  fROOTtree->Branch("Prim_y",      &fPVy,    "Prim_y/F"     );
+  fROOTtree->Branch("Prim_z",      &fPVz,    "Prim_z/F"     );
   fROOTtree->Branch("Prim_pdg",    &fPpdg,   "Prim_pdg/I"    );
 
   // Set Flux Hit Branches
@@ -59,12 +62,7 @@ void AnalysisManager::InitOutput()
   fROOTtree->Branch("Flux_x",     fFlux_xpre,   "Flux_x[Flux_Nhits]/F"  );
   fROOTtree->Branch("Flux_y",     fFlux_ypre,   "Flux_y[Flux_Nhits]/F"  );
   fROOTtree->Branch("Flux_z",     fFlux_zpre,   "Flux_z[Flux_Nhits]/F"  );
-  fROOTtree->Branch("Flux_polx",     fFlux_polx,   "Flux_polx[Flux_Nhits]/F"  );
-  fROOTtree->Branch("Flux_poly",     fFlux_poly,   "Flux_poly[Flux_Nhits]/F"  );
-  fROOTtree->Branch("Flux_polz",     fFlux_polz,   "Flux_polz[Flux_Nhits]/F"  );
   fROOTtree->Branch("Flux_E",     fFlux_Edep,   "Flux_E[Flux_Nhits]/F" );
-  fROOTtree->Branch("Flux_A",     fFlux_amass,  "Flux_A[Flux_Nhits]/I");
-  fROOTtree->Branch("Flux_Z",     fFlux_anum,   "Flux_Z[Flux_Nhits]/I");  
   fROOTtree->Branch("Flux_tid",   fFlux_tid,    "Flux_tid[Flux_Nhits]/I");
   fROOTtree->Branch("Flux_pid",   fFlux_pid,    "Flux_pid[Flux_Nhits]/I");
   fROOTtree->Branch("Flux_th",    &fFlux_th,    "Flux_th[Flux_Nhits]/F"     );
@@ -79,8 +77,12 @@ void AnalysisManager::ZeroArray()
   G4ThreeVector zero(0.,0.,0.);
   fPEne   = 9999;
   fPdir   = (zero);
+  fPvtx   = (zero);
   fPth    = 9999;
   fPph    = 9999;
+  fPVx    = 9999;
+  fPVy    = 9999;
+  fPVz    = 9999;
   fPTime  = 9999;
   fPPDef  = NULL;
   fPpdg   = 9999;
@@ -181,6 +183,9 @@ void AnalysisManager::FillTree()
   fPph    = (Float_t)fPdir.getPhi();                                                      
   fPEne   = (Float_t)fPEne;                         
   fPpdg   = (Int_t)  fPPDef->GetPDGEncoding();
+  fPVx    = (Float_t)fPvtx.getX();
+  fPVy    = (Float_t)fPvtx.getY();
+  fPVz    = (Float_t)fPvtx.getZ();                                                      
   
   fROOTtree->Fill();
 }

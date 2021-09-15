@@ -1,0 +1,12 @@
+run_apexg4mc.sh is a script for batch running of APEXG4MC+SIMC.
+
+It requires an environmental variable called SIMC to be set and
+an infiles directory to be present at the top level (as for the
+old APEX simulation by Vardan).
+
+To run,
+./run_apexg4mc.sh [jobname] [g4 macro name (without the .mac]
+
+eg
+
+./run_apexg4mc.sh mytest batch_apex

@@ -34,6 +34,7 @@ private:
   G4UIcmdWithADouble*          fSepScaleCmd;
   G4UIcmdWithAString*          fFieldMapCmd;  
   G4UIcmdWithABool*            fSieveOnCmd;
+  G4UIcmdWithABool*            fSieveRealCmd;
   G4UIcmdWithADouble*          fSieveAngleCmd;
   G4UIcmdWithAString*          fTargetCmd;
   
