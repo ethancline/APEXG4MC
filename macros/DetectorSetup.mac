@@ -7,4 +7,4 @@
 /APEXG4MC/detector/SieveOn true
 /APEXG4MC/detector/SieveAngle 5
 /APEXG4MC/detector/SieveReal false
-/APEXG4MC/detector/Target ProdW
+/APEXG4MC/detector/Target VWires

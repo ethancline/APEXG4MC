@@ -64,6 +64,8 @@ void ConvertToSIMC( TString fname="batch_apex.root" )
   TH2F* hRTp = new TH2F("hRTp","",100,-100, 100, 100, -100, 100);
   TH2F* hRTa = new TH2F("hRTa","",100,-100, 100, 100, -100, 100);
 
+  TH1F* phi = new TH1F("phi","",100,-10,10);
+
   for(Long64_t i=0; i<nentries;i++) {
     T->GetEntry(i);
 
@@ -91,7 +93,8 @@ void ConvertToSIMC( TString fname="batch_apex.root" )
       
       TVector3 plab;
       TVector3 poslab;
-      
+      if(Flux_id[j]==3)
+        phi->Fill(Flux_th[j]*180/3.14);
       if( Flux_id[j]  == 3 && Flux_pdg[j] == 11 ) { // look only at electrons in LHRS Q1
 	
 	// convert lab angles to TCS angles
@@ -145,6 +148,8 @@ void ConvertToSIMC( TString fname="batch_apex.root" )
   hRTp->Draw("colz");
   c1->cd(4);
   hRTa->Draw("colz");
+
+
 
   outfileL.close();
   outfileR.close();

@@ -16,8 +16,8 @@
 /APEXG4MC/generator/RasterY 2.0
 /APEXG4MC/generator/ThMin 2.0
 /APEXG4MC/generator/ThMax 8.0
-/APEXG4MC/generator/PhMin -5.0
-/APEXG4MC/generator/PhMax 5.0
+/APEXG4MC/generator/PhMin -35.0
+/APEXG4MC/generator/PhMax 35
 /APEXG4MC/generator/DeltaRange 0.2
 
 /APEXG4MC/analysis/setOutputFile vis_apex.root

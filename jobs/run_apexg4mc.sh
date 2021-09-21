@@ -6,13 +6,13 @@
 export JOBDIR=`pwd`/$1
 mkdir -p $JOBDIR
 cd $JOBDIR
-ln -sf ../../build/APEXG4MC APEXG4MC
-ln -sf ../../build/Septa-JB_map.table Septa-JB_map.table
-ln -sf ../../build/macros macros
+# ln -sf ../../build/APEXG4MC APEXG4MC
+# ln -sf ../../build/Septa-JB_map.table Septa-JB_map.table
+# ln -sf ../../build/macros macros
 # --------------------------------------------------------------------------------------------
 # run geant4 and convert root tree for SIMC
 # --------------------------------------------------------------------------------------------
-./APEXG4MC macros/$2.mac
+# ./APEXG4MC macros/$2.mac
 cp ../ConvertToSIMC.C .
 root -b -q ConvertToSIMC.C
 cp ../ext_part1 $SIMC/infiles

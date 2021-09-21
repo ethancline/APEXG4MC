@@ -985,7 +985,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Create Sieve Slit Virtual Detector
   //--------------------------------------------------------------------------- 
 
-  double sieveVD_distance  = 31.23*inch - 0.5 *inch;
+  double sieveVD_distance  = 31.23*inch;
 
   double sieveVD_pos_z     = -fDistTarPivot*cm+(sieveVD_distance + pSieveSlitZ/2.)*cos(fSieveAngle*deg); // DJH: was 105.30001365 cm and 5.81 degrees???
   double sieveVD_pos_x     = (sieveVD_distance + pSieveSlitZ/2.)*sin(fSieveAngle*deg);                   // DJH: was 5.81 degrees???
